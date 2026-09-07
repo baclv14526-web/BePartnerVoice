@@ -4,36 +4,36 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// ── Helper: đọc env var an toàn, không bao giờ null ──────────────
+static def envOrDefault(String key, String fallback) {
+    def val = System.getenv(key)
+    return (val != null && !val.isEmpty()) ? val : fallback
+}
+
 android {
     namespace 'com.bepartner.voiceassist'
     compileSdk 33
 
     defaultConfig {
         applicationId "com.bepartner.voiceassist"
-        minSdk 28          // Android 9 – Realme 2
+        minSdk 28
         targetSdk 33
-        // Version được inject từ CI qua environment variable
-        versionCode (System.getenv("BUILD_VERSION_CODE") ?: "1").toInteger()
-        versionName System.getenv("BUILD_VERSION_NAME") ?: "1.0.0"
-
+        versionCode Integer.parseInt(envOrDefault("BUILD_VERSION_CODE", "1"))
+        versionName envOrDefault("BUILD_VERSION_NAME", "1.0.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // ── Signing config ──────────────────────────────────────────────
-    // Đọc từ gradle.properties (được inject bởi CI workflow)
-    // Khi build local: tạo local.properties hoặc bỏ qua (dùng debug)
-    signingConfigs {
-        release {
-            def storePath  = findProperty("RELEASE_STORE_FILE")
-            def storePw    = findProperty("RELEASE_STORE_PASSWORD")
-            def keyAlias   = findProperty("RELEASE_KEY_ALIAS")
-            def keyPw      = findProperty("RELEASE_KEY_PASSWORD")
+    // ── Signing ──────────────────────────────────────────────────
+    def ksPath = findProperty("RELEASE_STORE_FILE")?.toString()
+    def ksFile = (ksPath != null && new File(ksPath).exists()) ? new File(ksPath) : null
 
-            if (storePath && new File(storePath.toString()).exists()) {
-                storeFile     file(storePath)
-                storePassword storePw
-                keyAlias      keyAlias
-                keyPassword   keyPw
+    signingConfigs {
+        if (ksFile != null) {
+            release {
+                storeFile     ksFile
+                storePassword findProperty("RELEASE_STORE_PASSWORD")?.toString()
+                keyAlias      findProperty("RELEASE_KEY_ALIAS")?.toString()
+                keyPassword   findProperty("RELEASE_KEY_PASSWORD")?.toString()
             }
         }
     }
@@ -44,11 +44,8 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                           'proguard-rules.pro'
-
-            // Dùng signing config release nếu key có sẵn, ngược lại dùng debug
-            def releaseSigning = signingConfigs.release
-            signingConfig = (releaseSigning.storeFile != null) ?
-                            releaseSigning : signingConfigs.debug
+            // Dùng release signing nếu key có, ngược lại fall back debug
+            signingConfig = (ksFile != null) ? signingConfigs.release : signingConfigs.debug
         }
         debug {
             applicationIdSuffix ".debug"
@@ -70,7 +67,6 @@ android {
         viewBinding true
     }
 
-    // Source set – trỏ vào đúng thư mục src/ của project
     sourceSets {
         main {
             java.srcDirs = ['src']
@@ -86,6 +82,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.lifecycle:lifecycle-service:2.7.0'
-    // LocalBroadcastManager (dùng trong service communication)
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 }
