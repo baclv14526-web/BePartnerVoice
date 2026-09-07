@@ -4,7 +4,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-// ── Helper: đọc env var an toàn, không bao giờ null ──────────────
 static def envOrDefault(String key, String fallback) {
     def val = System.getenv(key)
     return (val != null && !val.isEmpty()) ? val : fallback
@@ -12,12 +11,12 @@ static def envOrDefault(String key, String fallback) {
 
 android {
     namespace 'com.bepartner.voiceassist'
-    compileSdk 33
+    compileSdk 34          // ← nâng lên 34 (bắt buộc với AndroidX mới nhất)
 
     defaultConfig {
         applicationId "com.bepartner.voiceassist"
-        minSdk 28
-        targetSdk 33
+        minSdk 28          // Android 9 – Realme 2 (không đổi)
+        targetSdk 34
         versionCode Integer.parseInt(envOrDefault("BUILD_VERSION_CODE", "1"))
         versionName envOrDefault("BUILD_VERSION_NAME", "1.0.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -44,7 +43,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                           'proguard-rules.pro'
-            // Dùng release signing nếu key có, ngược lại fall back debug
             signingConfig = (ksFile != null) ? signingConfigs.release : signingConfigs.debug
         }
         debug {
@@ -77,10 +75,14 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
+    // Dùng BOM để tự đồng bộ version toàn bộ AndroidX
+    implementation platform('androidx.compose:compose-bom:2024.02.00')
+
+    // Phiên bản cụ thể – tất cả tương thích compileSdk 34
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-service:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.3'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 }
