@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BePartner Voice</string>
+    <string name="accessibility_service_description">
+        Dịch vụ điều khiển giọng nói cho ứng dụng BeBike Partner.
+        Tự động nhấn các nút như "Đã đến", "Bắt đầu chuyến", "Trả khách"
+        khi tài xế ra lệnh bằng giọng nói, giúp rảnh tay lái xe an toàn.
+    </string>
+    <string name="accessibility_service_summary">
+        Điều khiển BeBike bằng giọng nói – rảnh tay lái xe
+    </string>
+</resources>

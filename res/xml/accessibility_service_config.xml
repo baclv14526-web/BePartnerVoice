@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Accessibility Service Configuration for BePartner Voice Control
+    - packageNames: target BeBike partner app (adjust package name if different)
+    - accessibilityEventTypes: listen for window content changes to find buttons
+    - accessibilityFlags: include child views for deep button search
+    - canRetrieveWindowContent: CRITICAL - allows reading screen content
+    - canPerformGestures: allows simulating taps
+-->
+<accessibility-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged|typeViewClicked|typeAllMask"
+    android:accessibilityFeedbackType="feedbackSpoken|feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagReportViewIds|flagRequestEnhancedWebAccessibility"
+    android:canPerformGestures="true"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/accessibility_service_description"
+    android:notificationTimeout="100"
+    android:packageNames="com.go.bepartnerd,com.bebike.partner,com.grab.driver,com.bepartnerd"
+    android:settingsActivity=".MainActivity"
+    android:summary="@string/accessibility_service_summary" />
+<!--
+    NOTE: android:packageNames above lists possible BeBike package names.
+    Check the actual package name on your device via:
+    adb shell pm list packages | grep -i be
+    Then update this field with the correct one.
+-->

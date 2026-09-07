@@ -1,0 +1,91 @@
+// app/build.gradle
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.bepartner.voiceassist'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.bepartner.voiceassist"
+        minSdk 28          // Android 9 – Realme 2
+        targetSdk 33
+        // Version được inject từ CI qua environment variable
+        versionCode (System.getenv("BUILD_VERSION_CODE") ?: "1").toInteger()
+        versionName System.getenv("BUILD_VERSION_NAME") ?: "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // ── Signing config ──────────────────────────────────────────────
+    // Đọc từ gradle.properties (được inject bởi CI workflow)
+    // Khi build local: tạo local.properties hoặc bỏ qua (dùng debug)
+    signingConfigs {
+        release {
+            def storePath  = findProperty("RELEASE_STORE_FILE")
+            def storePw    = findProperty("RELEASE_STORE_PASSWORD")
+            def keyAlias   = findProperty("RELEASE_KEY_ALIAS")
+            def keyPw      = findProperty("RELEASE_KEY_PASSWORD")
+
+            if (storePath && new File(storePath.toString()).exists()) {
+                storeFile     file(storePath)
+                storePassword storePw
+                keyAlias      keyAlias
+                keyPassword   keyPw
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled   true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
+
+            // Dùng signing config release nếu key có sẵn, ngược lại dùng debug
+            def releaseSigning = signingConfigs.release
+            signingConfig = (releaseSigning.storeFile != null) ?
+                            releaseSigning : signingConfigs.debug
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix  "-debug"
+            debuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    // Source set – trỏ vào đúng thư mục src/ của project
+    sourceSets {
+        main {
+            java.srcDirs = ['src']
+            res.srcDirs  = ['../res']
+            manifest.srcFile '../AndroidManifest.xml'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-service:2.7.0'
+    // LocalBroadcastManager (dùng trong service communication)
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+}

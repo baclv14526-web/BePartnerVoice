@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Floating HUD overlay – appears on top of BeBike app.
+    Shows mic status, audio level bar, and last command result.
+    Drag to reposition, tap mic icon to toggle listening.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="180dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/overlay_bg"
+    android:elevation="8dp"
+    android:padding="10dp">
+
+    <!-- Top row: mic button + status text -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/btn_mic"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_mic"
+            android:background="@drawable/mic_button_bg"
+            android:contentDescription="Toggle microphone"
+            android:scaleType="centerInside"
+            android:padding="6dp" />
+
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🎤 Đang nghe…"
+            android:textColor="#4CAF50"
+            android:textSize="11sp"
+            android:paddingStart="8dp"
+            android:maxLines="2" />
+    </LinearLayout>
+
+    <!-- Audio level bar -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginTop="6dp"
+        android:background="#333333">
+
+        <View
+            android:id="@+id/view_mic_level"
+            android:layout_width="0dp"
+            android:layout_height="3dp"
+            android:background="#4CAF50" />
+    </FrameLayout>
+
+    <!-- Last command result -->
+    <TextView
+        android:id="@+id/tv_last_command"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#4CAF50"
+        android:textSize="10sp"
+        android:paddingTop="6dp"
+        android:visibility="gone"
+        android:maxLines="2" />
+
+</LinearLayout>

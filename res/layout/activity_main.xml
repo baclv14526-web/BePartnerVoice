@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Main setup screen – shown once to guide the driver
+    through enabling Accessibility + Overlay permissions.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎤 BePartner Voice"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingTop="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Điều khiển BeBike bằng giọng nói – rảnh tay lái xe"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:paddingBottom="24dp" />
+
+        <!-- Step card: Accessibility -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bước 1 – Accessibility Service"
+                android:textColor="#FF9800"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_a11y_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="❌ Chưa bật"
+                android:textColor="#F44336"
+                android:textSize="14sp"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_enable_a11y"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mở Cài đặt Accessibility"
+                android:backgroundTint="#FF9800" />
+        </LinearLayout>
+
+        <!-- Step card: Overlay -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bước 2 – Hiển thị trên màn hình"
+                android:textColor="#FF9800"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_overlay_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="❌ Chưa bật"
+                android:textColor="#F44336"
+                android:textSize="14sp"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_enable_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cấp quyền Overlay"
+                android:backgroundTint="#FF9800" />
+        </LinearLayout>
+
+        <!-- Step card: Microphone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bước 3 – Microphone"
+                android:textColor="#FF9800"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_mic_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="❌ Chưa cấp quyền"
+                android:textColor="#F44336"
+                android:textSize="14sp"
+                android:paddingTop="4dp" />
+        </LinearLayout>
+
+        <!-- Start button -->
+        <Button
+            android:id="@+id/btn_start_service"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Hoàn tất các bước trên"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:enabled="false"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Command reference -->
+        <Button
+            android:id="@+id/btn_view_commands"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📖 Xem danh sách lệnh giọng nói"
+            android:backgroundTint="#1E1E1E"
+            android:textColor="#AAAAAA" />
+
+        <!-- How it works note -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 Sau khi bật, app hiển thị nút mic nhỏ ở góc màn hình. Khi đang chạy BeBike, chỉ cần nói lệnh như 'Đã đến' hay 'Bắt đầu chuyến' – app sẽ tự nhấn nút giúp bạn."
+            android:textColor="#888888"
+            android:textSize="12sp"
+            android:paddingTop="20dp"
+            android:paddingBottom="32dp"
+            android:lineSpacingExtra="4dp" />
+
+    </LinearLayout>
+</ScrollView>
