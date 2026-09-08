@@ -2,15 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bepartner.voiceassist">
 
-    <!-- Permissions -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -21,7 +19,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,7 +29,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Accessibility Service - Core feature -->
         <service
             android:name=".accessibility.BePartnerAccessibilityService"
             android:exported="true"
@@ -46,18 +42,15 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- Voice Listening Foreground Service -->
         <service
             android:name=".service.VoiceListenerService"
             android:exported="false"
             android:foregroundServiceType="microphone" />
 
-        <!-- Overlay Service for floating UI -->
         <service
             android:name=".service.OverlayService"
             android:exported="false" />
 
-        <!-- Boot receiver to auto-start -->
         <receiver
             android:name=".receiver.BootReceiver"
             android:exported="true">

@@ -19,46 +19,30 @@ import com.bepartner.voiceassist.accessibility.BePartnerAccessibilityService
 import com.bepartner.voiceassist.service.OverlayService
 import com.bepartner.voiceassist.service.VoiceListenerService
 
-/**
- * MainActivity – one-time setup screen.
- *
- * After all permissions are granted and services enabled,
- * the driver can minimize this activity. The floating HUD
- * and voice service continue running in the background.
- */
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQ_AUDIO = 100
-        private const val REQ_OVERLAY = 101
     }
 
     private lateinit var tvA11yStatus: TextView
     private lateinit var tvOverlayStatus: TextView
     private lateinit var tvMicStatus: TextView
-    private lateinit var btnEnableA11y: Button
-    private lateinit var btnEnableOverlay: Button
     private lateinit var btnStartService: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        tvA11yStatus = findViewById(R.id.tv_a11y_status)
+        tvA11yStatus    = findViewById(R.id.tv_a11y_status)
         tvOverlayStatus = findViewById(R.id.tv_overlay_status)
-        tvMicStatus = findViewById(R.id.tv_mic_status)
-        btnEnableA11y = findViewById(R.id.btn_enable_a11y)
-        btnEnableOverlay = findViewById(R.id.btn_enable_overlay)
+        tvMicStatus     = findViewById(R.id.tv_mic_status)
         btnStartService = findViewById(R.id.btn_start_service)
 
-        btnEnableA11y.setOnClickListener { openAccessibilitySettings() }
-        btnEnableOverlay.setOnClickListener { openOverlaySettings() }
+        findViewById<Button>(R.id.btn_enable_a11y).setOnClickListener { openAccessibilitySettings() }
+        findViewById<Button>(R.id.btn_enable_overlay).setOnClickListener { openOverlaySettings() }
         btnStartService.setOnClickListener { startAllServices() }
-
-        // Show command reference card
-        findViewById<Button>(R.id.btn_view_commands).setOnClickListener {
-            showCommandReference()
-        }
+        findViewById<Button>(R.id.btn_view_commands).setOnClickListener { showCommandReference() }
     }
 
     override fun onResume() {
@@ -67,56 +51,53 @@ class MainActivity : AppCompatActivity() {
         requestMicPermission()
     }
 
-    // ──────────────────────────────────────────────
-    // Permission / setting checks
-    // ──────────────────────────────────────────────
+    // ── Permission checks ────────────────────────────────────────
     private fun isAccessibilityEnabled(): Boolean {
-        val am = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
-        val enabledServices = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        val enabled = Settings.Secure.getString(
+            contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: return false
         val myService = "${packageName}/${BePartnerAccessibilityService::class.java.name}"
-        return enabledServices.contains(myService, ignoreCase = true)
+        return enabled.contains(myService, ignoreCase = true)
     }
 
-    private fun isOverlayPermissionGranted(): Boolean =
+    private fun isOverlayGranted(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
 
-    private fun hasMicPermission(): Boolean =
+    private fun hasMic(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
                 PackageManager.PERMISSION_GRANTED
 
+    // ── UI ───────────────────────────────────────────────────────
     private fun updateStatusUI() {
-        val a11yOk = isAccessibilityEnabled()
-        val overlayOk = isOverlayPermissionGranted()
-        val micOk = hasMicPermission()
+        val a11y    = isAccessibilityEnabled()
+        val overlay = isOverlayGranted()
+        val mic     = hasMic()
 
-        tvA11yStatus.text = if (a11yOk) "✅ Accessibility: BẬT" else "❌ Accessibility: TẮT"
-        tvA11yStatus.setTextColor(getColor(if (a11yOk) R.color.green else R.color.red))
+        fun color(ok: Boolean) = ContextCompat.getColor(this, if (ok) R.color.green else R.color.red)
 
-        tvOverlayStatus.text = if (overlayOk) "✅ Overlay: BẬT" else "❌ Overlay: TẮT"
-        tvOverlayStatus.setTextColor(getColor(if (overlayOk) R.color.green else R.color.red))
+        tvA11yStatus.text    = if (a11y)    "✅ Accessibility: BẬT" else "❌ Accessibility: TẮT"
+        tvA11yStatus.setTextColor(color(a11y))
 
-        tvMicStatus.text = if (micOk) "✅ Microphone: BẬT" else "❌ Microphone: TẮT"
-        tvMicStatus.setTextColor(getColor(if (micOk) R.color.green else R.color.red))
+        tvOverlayStatus.text = if (overlay) "✅ Overlay: BẬT"       else "❌ Overlay: TẮT"
+        tvOverlayStatus.setTextColor(color(overlay))
 
-        btnStartService.isEnabled = a11yOk && overlayOk && micOk
-        btnStartService.text = if (a11yOk && overlayOk && micOk)
+        tvMicStatus.text     = if (mic)     "✅ Microphone: BẬT"    else "❌ Microphone: TẮT"
+        tvMicStatus.setTextColor(color(mic))
+
+        btnStartService.isEnabled = a11y && overlay && mic
+        btnStartService.text = if (a11y && overlay && mic)
             "🚀 Bắt đầu lắng nghe" else "Hoàn tất các bước trên"
     }
 
-    // ──────────────────────────────────────────────
-    // Open settings
-    // ──────────────────────────────────────────────
+    // ── Settings navigation ──────────────────────────────────────
     private fun openAccessibilitySettings() {
         AlertDialog.Builder(this)
             .setTitle("Bật Accessibility Service")
             .setMessage(
-                "1. Chọn 'Ứng dụng đã cài đặt' (hoặc 'Downloaded apps')\n" +
+                "1. Chọn 'Ứng dụng đã cài đặt'\n" +
                 "2. Tìm 'BePartner Voice Control'\n" +
                 "3. Bật công tắc ON\n" +
-                "4. Nhấn ALLOW khi được hỏi"
+                "4. Nhấn ALLOW"
             )
             .setPositiveButton("Mở Cài đặt") { _, _ ->
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -127,21 +108,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun openOverlaySettings() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-            )
+            startActivity(Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            ))
         }
     }
 
     private fun requestMicPermission() {
-        if (!hasMicPermission()) {
+        if (!hasMic()) {
             ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                REQ_AUDIO
+                this, arrayOf(Manifest.permission.RECORD_AUDIO), REQ_AUDIO
             )
         }
     }
@@ -153,11 +130,8 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQ_AUDIO) updateStatusUI()
     }
 
-    // ──────────────────────────────────────────────
-    // Start services
-    // ──────────────────────────────────────────────
+    // ── Start services ───────────────────────────────────────────
     private fun startAllServices() {
-        // Start voice listener
         val voiceIntent = Intent(this, VoiceListenerService::class.java).apply {
             action = VoiceListenerService.ACTION_START
         }
@@ -166,43 +140,26 @@ class MainActivity : AppCompatActivity() {
         } else {
             startService(voiceIntent)
         }
-
-        // Start overlay
         startService(Intent(this, OverlayService::class.java))
 
-        Toast.makeText(this, "✅ Dịch vụ giọng nói đã khởi động!\nBạn có thể thu nhỏ ứng dụng.", Toast.LENGTH_LONG).show()
-
-        // Give a moment then minimize
+        Toast.makeText(this, "✅ Dịch vụ giọng nói đã khởi động!", Toast.LENGTH_LONG).show()
         window.decorView.postDelayed({ moveTaskToBack(true) }, 1500)
     }
 
-    // ──────────────────────────────────────────────
-    // Command reference dialog
-    // ──────────────────────────────────────────────
+    // ── Command reference ────────────────────────────────────────
     private fun showCommandReference() {
-        val commands = buildString {
-            appendLine("🎤 NÓI CÁC LỆNH SAU:\n")
-            appendLine("📍 \"Đã đến điểm đón\" / \"Đã đến rồi\"")
-            appendLine("   → Nhấn nút [Đã đến]\n")
-            appendLine("🚀 \"Bắt đầu chuyến đi\" / \"Khởi hành\"")
-            appendLine("   → Nhấn nút [Bắt đầu chuyến]\n")
-            appendLine("✅ \"Trả khách\" / \"Hoàn thành\"")
-            appendLine("   → Nhấn nút [Trả khách]\n")
-            appendLine("👍 \"Chấp nhận chuyến\" / \"Nhận chuyến\"")
-            appendLine("   → Nhấn nút [Chấp nhận]\n")
-            appendLine("❌ \"Từ chối\" / \"Bỏ qua\"")
-            appendLine("   → Nhấn nút [Từ chối]\n")
-            appendLine("🟢 \"Online\" / \"Sẵn sàng\"")
-            appendLine("   → Bắt đầu nhận chuyến\n")
-            appendLine("🔴 \"Offline\" / \"Nghỉ thôi\"")
-            appendLine("   → Dừng nhận chuyến\n")
-            appendLine("💡 Mẹo: Nói rõ ràng, không cần từ wake-word.\n" +
-                    "App tự động lắng nghe liên tục.")
-        }
-
         AlertDialog.Builder(this)
             .setTitle("📖 Danh sách lệnh giọng nói")
-            .setMessage(commands)
+            .setMessage(
+                "📍 \"Đã đến điểm đón\" → [Đã đến]\n\n" +
+                "🚀 \"Bắt đầu chuyến đi\" → [Bắt đầu]\n\n" +
+                "✅ \"Trả khách\" / \"Hoàn thành\" → [Complete]\n\n" +
+                "👍 \"Chấp nhận chuyến\" → [Accept]\n\n" +
+                "❌ \"Từ chối\" → [Decline]\n\n" +
+                "🟢 \"Online\" / \"Sẵn sàng\"\n\n" +
+                "🔴 \"Offline\" / \"Nghỉ thôi\"\n\n" +
+                "💡 Nói rõ ràng, app tự lắng nghe liên tục."
+            )
             .setPositiveButton("OK", null)
             .show()
     }

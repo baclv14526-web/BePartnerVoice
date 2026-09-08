@@ -20,19 +20,8 @@ import android.widget.ImageButton
 import android.widget.TextView
 import com.bepartner.voiceassist.R
 import com.bepartner.voiceassist.model.VoiceCommand
+import kotlin.math.abs
 
-/**
- * OverlayService
- *
- * Draws a small floating HUD (TYPE_APPLICATION_OVERLAY) on top of every app.
- * The HUD shows:
- *  - A microphone icon (animated when listening)
- *  - Current status text ("Đang nghe…", "Xử lý…", last command, …)
- *  - Mic level visualizer bar
- *
- * The overlay is draggable so the driver can reposition it.
- * Tapping the mic button toggles the VoiceListenerService.
- */
 class OverlayService : Service() {
 
     private lateinit var windowManager: WindowManager
@@ -46,9 +35,6 @@ class OverlayService : Service() {
     private var isListening = false
     private var clearStatusRunnable: Runnable? = null
 
-    // ──────────────────────────────────────────────
-    // Broadcast receiver – listens to VoiceListenerService updates
-    // ──────────────────────────────────────────────
     private val statusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -70,87 +56,72 @@ class OverlayService : Service() {
         }
     }
 
-    // ──────────────────────────────────────────────
-    // Lifecycle
-    // ──────────────────────────────────────────────
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createOverlay()
-        registerReceivers()
+        registerStatusReceiver()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        unregisterReceiver(statusReceiver)
+        runCatching { unregisterReceiver(statusReceiver) }
         runCatching { windowManager.removeView(overlayView) }
         super.onDestroy()
     }
 
-    // ──────────────────────────────────────────────
-    // Overlay creation
-    // ──────────────────────────────────────────────
     private fun createOverlay() {
         overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_hud, null)
-        tvStatus = overlayView.findViewById(R.id.tv_status)
+        tvStatus      = overlayView.findViewById(R.id.tv_status)
         tvLastCommand = overlayView.findViewById(R.id.tv_last_command)
-        btnMic = overlayView.findViewById(R.id.btn_mic)
-        viewMicLevel = overlayView.findViewById(R.id.view_mic_level)
+        btnMic        = overlayView.findViewById(R.id.btn_mic)
+        viewMicLevel  = overlayView.findViewById(R.id.view_mic_level)
 
         val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         else
-            @Suppress("DEPRECATION")
-            WindowManager.LayoutParams.TYPE_PHONE
+            @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             overlayType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.END
-            x = 16
-            y = 120
+            x = 16; y = 120
         }
 
         windowManager.addView(overlayView, params)
 
-        // Mic button toggles voice service
         btnMic.setOnClickListener {
-            val action = if (isListening)
-                VoiceListenerService.ACTION_STOP
-            else
-                VoiceListenerService.ACTION_START
-            startService(Intent(this, VoiceListenerService::class.java).apply {
-                this.action = action
-            })
+            val action = if (isListening) VoiceListenerService.ACTION_STOP
+                         else VoiceListenerService.ACTION_START
+            startService(Intent(this, VoiceListenerService::class.java).apply { this.action = action })
         }
 
-        // Make overlay draggable
         makeDraggable(overlayView, params)
     }
 
     private fun makeDraggable(view: View, params: WindowManager.LayoutParams) {
         var startX = 0f; var startY = 0f
-        var startParamX = 0; var startParamY = 0
+        var startPX = 0; var startPY = 0
 
         view.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.rawX; startY = event.rawY
-                    startParamX = params.x; startParamY = params.y
-                    false // allow click events
+                    startPX = params.x;  startPY = params.y
+                    false
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - startX).toInt()
                     val dy = (event.rawY - startY).toInt()
-                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        params.x = startParamX - dx
-                        params.y = startParamY + dy
+                    if (abs(dx) > 5 || abs(dy) > 5) {
+                        params.x = startPX - dx
+                        params.y = startPY + dy
                         windowManager.updateViewLayout(view, params)
                         true
                     } else false
@@ -160,9 +131,6 @@ class OverlayService : Service() {
         }
     }
 
-    // ──────────────────────────────────────────────
-    // UI updates
-    // ──────────────────────────────────────────────
     private fun updateStatus(status: String, detail: String?) {
         handler.post {
             when (status) {
@@ -210,12 +178,11 @@ class OverlayService : Service() {
         handler.post {
             val cmd = runCatching { VoiceCommand.valueOf(commandName) }.getOrNull()
             val label = cmd?.let { "${it.icon} ${it.displayName}" } ?: commandName
-            tvLastCommand.text = if (success) "✅ $label" else "❌ $label (không tìm thấy nút)"
+            tvLastCommand.text = if (success) "✅ $label" else "❌ $label"
             tvLastCommand.setTextColor(
                 if (success) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
             )
             tvLastCommand.visibility = View.VISIBLE
-            handler.removeCallbacksAndMessages("hide_last")
             handler.postDelayed({ tvLastCommand.visibility = View.GONE }, 4000)
         }
     }
@@ -223,13 +190,10 @@ class OverlayService : Service() {
     private fun updateMicLevel(rms: Float) {
         handler.post {
             val normalized = ((rms + 2f) / 12f).coerceIn(0f, 1f)
-            val parentWidth = viewMicLevel.parent.let {
-                if (it is View) it.width else 200
-            }
-            viewMicLevel.layoutParams = viewMicLevel.layoutParams.apply {
-                width = (parentWidth * normalized).toInt().coerceAtLeast(4)
-            }
-            viewMicLevel.requestLayout()
+            val parentWidth = (viewMicLevel.parent as? View)?.width ?: 200
+            val lp = viewMicLevel.layoutParams
+            lp.width = (parentWidth * normalized).toInt().coerceAtLeast(4)
+            viewMicLevel.layoutParams = lp
         }
     }
 
@@ -240,19 +204,19 @@ class OverlayService : Service() {
                 tvStatus.text = "🎤 Đang nghe…"
                 tvStatus.setTextColor(Color.parseColor("#4CAF50"))
             }
-        }
-        handler.postDelayed(clearStatusRunnable!!, delayMs)
+        }.also { handler.postDelayed(it, delayMs) }
     }
 
-    // ──────────────────────────────────────────────
-    // Receivers
-    // ──────────────────────────────────────────────
-    private fun registerReceivers() {
+    private fun registerStatusReceiver() {
         val filter = IntentFilter().apply {
             addAction("com.bepartner.voiceassist.STATUS_UPDATE")
             addAction("com.bepartner.voiceassist.COMMAND_RESULT")
             addAction("com.bepartner.voiceassist.RMS_UPDATE")
         }
-        registerReceiver(statusReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(statusReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(statusReceiver, filter)
+        }
     }
 }

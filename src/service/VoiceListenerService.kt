@@ -17,290 +17,161 @@ import androidx.core.app.NotificationCompat
 import com.bepartner.voiceassist.MainActivity
 import com.bepartner.voiceassist.R
 import com.bepartner.voiceassist.accessibility.BePartnerAccessibilityService
-import com.bepartner.voiceassist.model.VoiceCommand
 import com.bepartner.voiceassist.util.VoiceCommandParser
-import java.util.Locale
 
-/**
- * VoiceListenerService
- *
- * Runs as a foreground service (required for microphone access in background on Android 9+).
- * Uses Android's built-in SpeechRecognizer (Google engine) in continuous-listen mode.
- *
- * Flow:
- *   startListening() → SpeechRecognizer → onResults() → VoiceCommandParser.parse()
- *       → BePartnerAccessibilityService.executeVoiceCommand()
- *       → broadcast result → OverlayService updates UI
- *
- * Continuous mode: after each result (or error), listening restarts automatically.
- */
 class VoiceListenerService : Service() {
 
     companion object {
         private const val TAG = "VoiceListenerSvc"
-        private const val NOTIF_CHANNEL_ID = "bepartner_voice_channel"
-        private const val NOTIF_ID = 1001
-
-        const val ACTION_START = "com.bepartner.voiceassist.START_VOICE"
-        const val ACTION_STOP = "com.bepartner.voiceassist.STOP_VOICE"
-        const val ACTION_TOGGLE = "com.bepartner.voiceassist.TOGGLE_VOICE"
+        private const val CHANNEL_ID = "bepartner_voice"
+        private const val NOTIF_ID   = 1001
+        const val ACTION_START  = "com.bepartner.voiceassist.START_VOICE"
+        const val ACTION_STOP   = "com.bepartner.voiceassist.STOP_VOICE"
     }
 
-    private var speechRecognizer: SpeechRecognizer? = null
-    private var isListening = false
-    private var shouldContinue = true
+    private var recognizer: SpeechRecognizer? = null
+    private var isListening   = false
+    private var shouldContinue = false
 
-    // ──────────────────────────────────────────────
-    // Service lifecycle
-    // ──────────────────────────────────────────────
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-        startForeground(NOTIF_ID, buildNotification("Đang chờ lệnh giọng nói…"))
-        initializeSpeechRecognizer()
+        createChannel()
+        startForeground(NOTIF_ID, buildNotif("⏸ Chờ khởi động…"))
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            recognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+                setRecognitionListener(listener)
+            }
+        } else {
+            Log.e(TAG, "SpeechRecognizer not available")
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> startListening()
-            ACTION_STOP -> {
-                shouldContinue = false
-                stopListening()
-            }
-            ACTION_TOGGLE -> {
-                if (isListening) {
-                    shouldContinue = false
-                    stopListening()
-                } else {
-                    shouldContinue = true
-                    startListening()
-                }
-            }
+            ACTION_START -> { shouldContinue = true;  startListening() }
+            ACTION_STOP  -> { shouldContinue = false; stopListening()  }
         }
-        return START_STICKY // restart if killed by system
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         shouldContinue = false
-        speechRecognizer?.destroy()
+        recognizer?.destroy()
         super.onDestroy()
     }
 
-    // ──────────────────────────────────────────────
-    // SpeechRecognizer setup
-    // ──────────────────────────────────────────────
-    private fun initializeSpeechRecognizer() {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            Log.e(TAG, "Speech recognition not available on this device!")
-            broadcastStatus("error", "Speech recognition không khả dụng")
-            return
-        }
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
-            setRecognitionListener(recognitionListener)
-        }
-        Log.i(TAG, "SpeechRecognizer initialized ✓")
-    }
-
-    private fun buildRecognizerIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        // Vietnamese primary, English fallback
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN")
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "vi-VN")
-        putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_MATCH, false)
-        putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
-        // Shorter silence timeout = more responsive
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
-    }
-
-    // ──────────────────────────────────────────────
-    // Listen control
-    // ──────────────────────────────────────────────
     private fun startListening() {
-        if (isListening) return
+        if (isListening || recognizer == null) return
         isListening = true
-        shouldContinue = true
-        speechRecognizer?.startListening(buildRecognizerIntent())
-        updateNotification("🎤 Đang nghe lệnh…")
-        broadcastStatus("listening", null)
-        Log.d(TAG, "Started listening")
+        recognizer!!.startListening(buildRecIntent())
+        updateNotif("🎤 Đang nghe lệnh…")
+        broadcast("listening", null)
     }
 
     private fun stopListening() {
         isListening = false
-        speechRecognizer?.stopListening()
-        updateNotification("⏸ Tạm dừng – nhấn để bắt đầu")
-        broadcastStatus("idle", null)
-        Log.d(TAG, "Stopped listening")
+        recognizer?.stopListening()
+        updateNotif("⏸ Tạm dừng")
+        broadcast("idle", null)
     }
 
-    private fun restartListeningAfterDelay(delayMs: Long = 500) {
+    private fun restart(delayMs: Long = 400) {
         if (!shouldContinue) return
         isListening = false
-        android.os.Handler(mainLooper).postDelayed({
-            if (shouldContinue) startListening()
-        }, delayMs)
+        android.os.Handler(mainLooper).postDelayed({ if (shouldContinue) startListening() }, delayMs)
     }
 
-    // ──────────────────────────────────────────────
-    // RecognitionListener
-    // ──────────────────────────────────────────────
-    private val recognitionListener = object : RecognitionListener {
+    private fun buildRecIntent() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN")
+        putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1500L)
+        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
+    }
 
-        override fun onReadyForSpeech(params: Bundle?) {
-            Log.d(TAG, "Ready for speech")
-            broadcastStatus("ready", null)
-        }
+    private val listener = object : RecognitionListener {
+        override fun onReadyForSpeech(p: Bundle?)    { broadcast("ready", null) }
+        override fun onBeginningOfSpeech()            { broadcast("speaking", null) }
+        override fun onEndOfSpeech()                  { isListening = false; broadcast("processing", null) }
+        override fun onBufferReceived(b: ByteArray?)  {}
+        override fun onEvent(t: Int, p: Bundle?)      {}
 
-        override fun onBeginningOfSpeech() {
-            Log.d(TAG, "Speech began")
-            broadcastStatus("speaking", null)
-        }
-
-        override fun onRmsChanged(rmsdB: Float) {
-            // Broadcast audio level for visual feedback in overlay
-            sendBroadcast(Intent("com.bepartner.voiceassist.RMS_UPDATE").apply {
-                putExtra("rms", rmsdB)
-            })
-        }
-
-        override fun onBufferReceived(buffer: ByteArray?) {}
-
-        override fun onEndOfSpeech() {
-            Log.d(TAG, "End of speech, processing…")
-            isListening = false
-            broadcastStatus("processing", null)
+        override fun onRmsChanged(rms: Float) {
+            sendBroadcast(Intent("com.bepartner.voiceassist.RMS_UPDATE").putExtra("rms", rms))
         }
 
         override fun onResults(results: Bundle?) {
-            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                ?: emptyList<String>()
-
-            Log.d(TAG, "Recognition results: $matches")
-
+            val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) ?: emptyList<String>()
             val command = VoiceCommandParser.parse(matches)
             if (command != null) {
-                Log.i(TAG, "Command matched: $command")
-                executeCommand(command)
-                broadcastStatus("command_found", command.displayName)
+                broadcast("command_found", command.displayName)
+                val a11y = BePartnerAccessibilityService.instance
+                if (a11y != null) {
+                    a11y.executeVoiceCommand(command)
+                } else {
+                    sendBroadcast(Intent(BePartnerAccessibilityService.ACTION_EXECUTE_COMMAND).apply {
+                        putExtra(BePartnerAccessibilityService.EXTRA_COMMAND_KEY, command.name)
+                    })
+                }
             } else {
-                Log.d(TAG, "No command matched for: $matches")
-                broadcastStatus("no_match", matches.firstOrNull())
+                broadcast("no_match", matches.firstOrNull())
             }
-
-            // Always restart to keep listening
-            restartListeningAfterDelay(300)
+            restart(300)
         }
 
-        override fun onPartialResults(partialResults: Bundle?) {
-            val partial = partialResults
-                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                ?.firstOrNull() ?: return
-            broadcastStatus("partial", partial)
+        override fun onPartialResults(partial: Bundle?) {
+            val text = partial?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+            if (text != null) broadcast("partial", text)
         }
 
         override fun onError(error: Int) {
-            val errorMsg = speechErrorToString(error)
-            Log.w(TAG, "Recognition error: $errorMsg ($error)")
-
             when (error) {
                 SpeechRecognizer.ERROR_NO_MATCH,
-                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
-                    // Normal – just restart
-                    restartListeningAfterDelay(200)
-                }
-                SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> {
-                    restartListeningAfterDelay(1000)
-                }
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT  -> restart(200)
+                SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> restart(1000)
                 SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {
-                    broadcastStatus("error", "Cần quyền microphone")
                     shouldContinue = false
+                    broadcast("error", "Cần quyền microphone")
                 }
-                else -> restartListeningAfterDelay(500)
+                else -> restart(500)
             }
         }
-
-        override fun onEvent(eventType: Int, params: Bundle?) {}
     }
 
-    // ──────────────────────────────────────────────
-    // Execute command via AccessibilityService
-    // ──────────────────────────────────────────────
-    private fun executeCommand(command: VoiceCommand) {
-        val a11yService = BePartnerAccessibilityService.instance
-        if (a11yService != null) {
-            // Direct call if service is alive
-            a11yService.executeVoiceCommand(command)
-        } else {
-            // Fallback: broadcast (AccessibilityService self-registers receiver)
-            sendBroadcast(Intent(BePartnerAccessibilityService.ACTION_EXECUTE_COMMAND).apply {
-                putExtra(BePartnerAccessibilityService.EXTRA_COMMAND_KEY, command.name)
-            })
-        }
-    }
-
-    // ──────────────────────────────────────────────
-    // Broadcast helpers
-    // ──────────────────────────────────────────────
-    private fun broadcastStatus(status: String, detail: String?) {
+    private fun broadcast(status: String, detail: String?) {
         sendBroadcast(Intent("com.bepartner.voiceassist.STATUS_UPDATE").apply {
             putExtra("status", status)
-            detail?.let { putExtra("detail", it) }
+            if (detail != null) putExtra("detail", detail)
         })
     }
 
-    // ──────────────────────────────────────────────
-    // Notification
-    // ──────────────────────────────────────────────
-    private fun createNotificationChannel() {
+    // ── Notification ─────────────────────────────────────────────
+    private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                NOTIF_CHANNEL_ID,
-                "BePartner Voice Control",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Dịch vụ điều khiển giọng nói cho BeBike"
-                setShowBadge(false)
-            }
-            getSystemService(NotificationManager::class.java)
-                ?.createNotificationChannel(channel)
+            val ch = NotificationChannel(CHANNEL_ID, "BePartner Voice", NotificationManager.IMPORTANCE_LOW)
+            ch.setShowBadge(false)
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(ch)
         }
     }
 
-    private fun buildNotification(text: String): Notification {
-        val openIntent = PendingIntent.getActivity(
-            this, 0,
-            Intent(this, MainActivity::class.java),
+    private fun buildNotif(text: String): Notification {
+        val pi = PendingIntent.getActivity(
+            this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        return NotificationCompat.Builder(this, NOTIF_CHANNEL_ID)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("BePartner Voice 🎤")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_mic)
-            .setContentIntent(openIntent)
+            .setContentIntent(pi)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }
 
-    private fun updateNotification(text: String) {
-        val notifManager = getSystemService(NotificationManager::class.java)
-        notifManager?.notify(NOTIF_ID, buildNotification(text))
-    }
-
-    private fun speechErrorToString(error: Int) = when (error) {
-        SpeechRecognizer.ERROR_AUDIO -> "Audio error"
-        SpeechRecognizer.ERROR_CLIENT -> "Client error"
-        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
-        SpeechRecognizer.ERROR_NETWORK -> "Network error"
-        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
-        SpeechRecognizer.ERROR_NO_MATCH -> "No match"
-        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
-        SpeechRecognizer.ERROR_SERVER -> "Server error"
-        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Speech timeout"
-        else -> "Unknown error"
+    private fun updateNotif(text: String) {
+        getSystemService(NotificationManager::class.java)?.notify(NOTIF_ID, buildNotif(text))
     }
 }

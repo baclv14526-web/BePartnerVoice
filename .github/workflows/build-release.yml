@@ -120,6 +120,7 @@ jobs:
         run: |
           ./gradlew assembleRelease \
             --no-daemon \
+            --info \
             --stacktrace \
             -PRELEASE_STORE_FILE="${{ env.KS_FILE }}" \
             -PRELEASE_STORE_PASSWORD="${{ env.KS_PW }}" \

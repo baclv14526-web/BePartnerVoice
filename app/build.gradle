@@ -71,7 +71,7 @@ android {
     }
 
     buildFeatures {
-        viewBinding true
+        viewBinding false
     }
 
     // ── Source layout: tất cả source nằm ở root, module chỉ là app/ ─
