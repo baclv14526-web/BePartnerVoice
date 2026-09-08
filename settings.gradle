@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BePartnerVoice"
+rootProject.name = 'BePartnerVoice'
 include ':app'

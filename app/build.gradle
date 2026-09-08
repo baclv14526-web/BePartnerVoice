@@ -1,38 +1,49 @@
 // app/build.gradle
+// AGP 8.5.2 | Gradle 8.7 | compileSdk 34 | minSdk 28 (Android 9)
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
 
-static def envOrDefault(String key, String fallback) {
-    def val = System.getenv(key)
-    return (val != null && !val.isEmpty()) ? val : fallback
+// ── Đọc env var an toàn, không bao giờ null ──────────────────────
+static def env(String key, String fallback) {
+    String val = System.getenv(key)
+    return (val != null && !val.trim().isEmpty()) ? val.trim() : fallback
 }
 
+// ── Đọc signing params từ project properties (-P flag của Gradle) ─
+// findProperty() trả về null nếu không có → dùng ?: '' để tránh NPE
+def ksPath     = (findProperty('RELEASE_STORE_FILE')     ?: '').toString().trim()
+def ksPw       = (findProperty('RELEASE_STORE_PASSWORD') ?: '').toString().trim()
+def ksAlias    = (findProperty('RELEASE_KEY_ALIAS')      ?: '').toString().trim()
+def ksPwKey    = (findProperty('RELEASE_KEY_PASSWORD')   ?: '').toString().trim()
+def hasKeystore = ksPath != '' && new File(ksPath).exists()
+
 android {
-    namespace 'com.bepartner.voiceassist'
-    compileSdk 34          // ← nâng lên 34 (bắt buộc với AndroidX mới nhất)
+    namespace    'com.bepartner.voiceassist'
+    compileSdk   34
 
     defaultConfig {
-        applicationId "com.bepartner.voiceassist"
-        minSdk 28          // Android 9 – Realme 2 (không đổi)
-        targetSdk 34
-        versionCode Integer.parseInt(envOrDefault("BUILD_VERSION_CODE", "1"))
-        versionName envOrDefault("BUILD_VERSION_NAME", "1.0.0")
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        applicationId           'com.bepartner.voiceassist'
+        minSdk                  28      // Android 9 – Realme 2
+        targetSdk               34
+        versionCode             Integer.parseInt(env('BUILD_VERSION_CODE', '1'))
+        versionName             env('BUILD_VERSION_NAME', '1.0.0')
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
-    // ── Signing ──────────────────────────────────────────────────
-    def ksPath = findProperty("RELEASE_STORE_FILE")?.toString()
-    def ksFile = (ksPath != null && new File(ksPath).exists()) ? new File(ksPath) : null
-
+    // ── Signing configs ────────────────────────────────────────────
     signingConfigs {
-        if (ksFile != null) {
-            release {
-                storeFile     ksFile
-                storePassword findProperty("RELEASE_STORE_PASSWORD")?.toString()
-                keyAlias      findProperty("RELEASE_KEY_ALIAS")?.toString()
-                keyPassword   findProperty("RELEASE_KEY_PASSWORD")?.toString()
+        debug {
+            // default debug keystore – luôn tồn tại trên runner
+        }
+        release {
+            if (hasKeystore) {
+                storeFile     file(ksPath)
+                storePassword ksPw
+                keyAlias      ksAlias
+                keyPassword   ksPwKey
             }
         }
     }
@@ -41,13 +52,11 @@ android {
         release {
             minifyEnabled   true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                          'proguard-rules.pro'
-            signingConfig = (ksFile != null) ? signingConfigs.release : signingConfigs.debug
+            proguardFiles   getDefaultProguardFile('proguard-android-optimize.txt'),
+                            'proguard-rules.pro'
+            signingConfig   hasKeystore ? signingConfigs.release : signingConfigs.debug
         }
         debug {
-            applicationIdSuffix ".debug"
-            versionNameSuffix  "-debug"
             debuggable true
         }
     }
@@ -65,20 +74,18 @@ android {
         viewBinding true
     }
 
+    // ── Source layout: tất cả source nằm ở root, module chỉ là app/ ─
     sourceSets {
         main {
-            java.srcDirs = ['src']
-            res.srcDirs  = ['../res']
-            manifest.srcFile '../AndroidManifest.xml'
+            java.srcDirs      = [rootProject.file('src').absolutePath]
+            res.srcDirs       = [rootProject.file('res').absolutePath]
+            manifest.srcFile    rootProject.file('AndroidManifest.xml').absolutePath
         }
     }
 }
 
 dependencies {
-    // Dùng BOM để tự đồng bộ version toàn bộ AndroidX
-    implementation platform('androidx.compose:compose-bom:2024.02.00')
-
-    // Phiên bản cụ thể – tất cả tương thích compileSdk 34
+    // Tất cả version dưới đây đều tương thích compileSdk 34 + minSdk 28
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
