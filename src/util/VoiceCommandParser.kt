@@ -2,41 +2,26 @@ package com.bepartner.voiceassist.util
 
 import com.bepartner.voiceassist.model.VoiceCommand
 
-/**
- * VoiceCommandParser
- *
- * Maps raw speech-recognition text → VoiceCommand.
- *
- * Recognition results are often imperfect, so we:
- *  1. Normalize (lowercase, strip diacritics optionally)
- *  2. Check keyword lists with partial matching
- *  3. Apply a simple confidence threshold (keyword hit count)
- *
- * Add more trigger phrases here as you discover what Google
- * Speech Recognition returns for your accent / microphone.
- */
 object VoiceCommandParser {
 
-    // ──────────────────────────────────────────────
-    // Trigger phrase lists per command
-    // Each list contains all phrases that should activate that command.
-    // Shorter phrases appear later so longer phrases match first.
-    // ──────────────────────────────────────────────
     private val triggerPhrases: Map<VoiceCommand, List<String>> = mapOf(
 
+        // ── Đã đến điểm đón ────────────────────────────────────
         VoiceCommand.DA_DEN to listOf(
             "đã đến điểm đón",
-            "đã đến nơi",
+            "đã đến nơi đón",
             "đã đến rồi",
             "đến điểm đón",
             "tôi đã đến",
+            "đến rồi",
             "arrived",
+            "da den diem don",
             "da den roi",
             "da den",
-            "den noi",
-            "đến rồi"
+            "den noi"
         ),
 
+        // ── Bắt đầu chuyến ─────────────────────────────────────
         VoiceCommand.BAT_DAU to listOf(
             "bắt đầu chuyến đi",
             "bắt đầu chuyến",
@@ -46,12 +31,14 @@ object VoiceCommandParser {
             "start trip",
             "bat dau chuyen di",
             "bat dau chuyen",
-            "bat dau di",
-            "bat dau"
+            "bat dau di"
+            // "bat dau" đặt sau để tránh nhầm với DEN_DIEM_HANG
         ),
 
+        // ── Trả khách ──────────────────────────────────────────
         VoiceCommand.TRA_KHACH to listOf(
             "trả khách rồi",
+            "trả khách xong",
             "trả khách",
             "hoàn thành chuyến",
             "kết thúc chuyến",
@@ -59,101 +46,206 @@ object VoiceCommandParser {
             "complete trip",
             "end trip",
             "tra khach roi",
+            "tra khach xong",
             "tra khach",
             "hoan thanh"
         ),
 
+        // ── Chấp nhận ──────────────────────────────────────────
         VoiceCommand.CHAP_NHAN to listOf(
             "chấp nhận chuyến",
+            "nhận chuyến này",
             "nhận chuyến",
             "chấp nhận",
             "đồng ý",
             "ok nhận",
             "accept",
             "chap nhan chuyen",
-            "chap nhan",
-            "nhan chuyen"
+            "nhan chuyen nay",
+            "nhan chuyen",
+            "chap nhan"
         ),
 
+        // ── Từ chối ────────────────────────────────────────────
         VoiceCommand.TU_CHOI to listOf(
             "từ chối chuyến",
             "từ chối",
+            "bỏ qua chuyến",
             "bỏ qua",
             "decline",
             "skip",
             "tu choi chuyen",
             "tu choi",
+            "bo qua chuyen",
             "bo qua"
         ),
 
+        // ── Báo cáo ────────────────────────────────────────────
         VoiceCommand.BAO_CAO to listOf(
             "báo cáo vấn đề",
             "báo cáo sự cố",
             "có vấn đề",
             "report",
+            "bao cao van de",
+            "bao cao su co",
             "bao cao"
         ),
 
+        // ── Online ─────────────────────────────────────────────
         VoiceCommand.ONLINE to listOf(
             "bắt đầu nhận chuyến",
+            "vào ca",
             "online",
             "sẵn sàng",
             "go online",
             "bat dau nhan chuyen",
+            "vao ca",
             "san sang"
         ),
 
+        // ── Offline ────────────────────────────────────────────
         VoiceCommand.OFFLINE to listOf(
             "dừng nhận chuyến",
+            "kết thúc ca",
             "offline",
             "nghỉ thôi",
             "go offline",
-            "nghi thoi",
-            "dung nhan chuyen"
+            "dung nhan chuyen",
+            "ket thuc ca",
+            "nghi thoi"
+        ),
+
+        // ── Bật/Tắt nút nhận cuốc (gạt trên BeBike) ────────────
+        VoiceCommand.BAT_NHAN_CUOC to listOf(
+            "bật tắt nhận cuốc",
+            "bật nhận cuốc",
+            "tắt nhận cuốc",
+            "bật nút nhận cuốc",
+            "tắt nút nhận cuốc",
+            "bật gạt",
+            "tắt gạt",
+            "bật tắt",
+            "bat tat nhan cuoc",
+            "bat nhan cuoc",
+            "tat nhan cuoc",
+            "bat gat",
+            "tat gat",
+            "bat tat"
+        ),
+
+        // ── Bật micro của app ────────────────────────────────────
+        VoiceCommand.BAT_MICRO to listOf(
+            "bật micro",
+            "bật microphone",
+            "tiếp tục nghe",
+            "mở micro",
+            "bat micro",
+            "mo micro"
+        ),
+
+        // ── Tắt micro của app ────────────────────────────────────
+        VoiceCommand.TAT_MICRO to listOf(
+            "tắt micro",
+            "tắt microphone",
+            "tạm dừng nghe",
+            "đóng micro",
+            "tat micro",
+            "dong micro"
+        ),
+
+        // ── Đã đến điểm nhận hàng (mới) ────────────────────────
+        VoiceCommand.DEN_DIEM_HANG to listOf(
+            "đã đến điểm nhận hàng",
+            "đến điểm lấy hàng",
+            "đến chỗ lấy hàng",
+            "đến kho hàng",
+            "tới điểm nhận hàng",
+            "da den diem nhan hang",
+            "den diem lay hang",
+            "den cho lay hang",
+            "toi diem nhan hang"
+        ),
+
+        // ── Đã nhận hàng (mới) ─────────────────────────────────
+        VoiceCommand.DA_NHAN_HANG to listOf(
+            "đã nhận hàng rồi",
+            "đã lấy hàng rồi",
+            "đã nhận hàng",
+            "đã lấy hàng",
+            "nhận hàng xong",
+            "lấy hàng xong",
+            "da nhan hang roi",
+            "da lay hang roi",
+            "da nhan hang",
+            "nhan hang xong",
+            "lay hang xong"
+        ),
+
+        // ── Chụp ảnh nhận hàng (mới) ───────────────────────────
+        VoiceCommand.CHUP_ANH to listOf(
+            "chụp ảnh nhận hàng",
+            "chụp ảnh giao hàng",
+            "chụp ảnh xác nhận",
+            "chụp ảnh",
+            "chụp hình",
+            "take photo",
+            "chup anh nhan hang",
+            "chup anh giao hang",
+            "chup anh xac nhan",
+            "chup anh",
+            "chup hinh"
+        ),
+
+        // ── Trả hàng (mới) ─────────────────────────────────────
+        VoiceCommand.TRA_HANG to listOf(
+            "trả hàng rồi",
+            "giao hàng xong",
+            "đã giao hàng",
+            "trả hàng",
+            "giao hàng",
+            "hoàn thành giao hàng",
+            "delivered",
+            "tra hang roi",
+            "giao hang xong",
+            "da giao hang",
+            "tra hang",
+            "giao hang"
+        ),
+
+        // ── Ngừng nhận chuyến (mới) ────────────────────────────
+        VoiceCommand.NGUNG_NHAN to listOf(
+            "ngừng nhận chuyến",
+            "không nhận chuyến nữa",
+            "tạm ngừng nhận",
+            "dừng lại",
+            "ngung nhan chuyen",
+            "khong nhan chuyen nua",
+            "tam ngung nhan",
+            "dung lai"
         )
     )
 
-    /**
-     * Parse a list of speech recognition results into a VoiceCommand.
-     *
-     * Google returns multiple hypotheses ranked by confidence – we check all of them.
-     *
-     * @param results list from SpeechRecognizer (index 0 = highest confidence)
-     * @return matched VoiceCommand or null if no match found
-     */
     fun parse(results: List<String>): VoiceCommand? {
         for (rawText in results) {
-            val normalized = normalize(rawText)
-            val command = matchCommand(normalized)
+            val command = matchCommand(normalize(rawText))
             if (command != null) return command
         }
         return null
     }
 
     private fun matchCommand(normalized: String): VoiceCommand? {
-        // Longest-match wins: sort triggers by phrase length descending
-        val allCandidates = mutableListOf<Pair<VoiceCommand, String>>()
-        for ((cmd, phrases) in triggerPhrases) {
-            for (phrase in phrases) {
-                allCandidates.add(cmd to phrase)
-            }
-        }
-        allCandidates.sortByDescending { it.second.length }
+        // Gom tất cả cặp (command, phrase), ưu tiên phrase dài nhất trước
+        // để tránh "trả hàng" match nhầm khi người dùng nói "trả khách"
+        val candidates = triggerPhrases.flatMap { (cmd, phrases) ->
+            phrases.map { cmd to it }
+        }.sortedByDescending { it.second.length }
 
-        for ((cmd, phrase) in allCandidates) {
-            if (normalized.contains(normalize(phrase))) {
-                return cmd
-            }
+        for ((cmd, phrase) in candidates) {
+            if (normalized.contains(normalize(phrase))) return cmd
         }
         return null
     }
 
-    /**
-     * Normalize text: lowercase, collapse whitespace.
-     * We deliberately keep diacritics so "đã đến" still matches "đã đến".
-     * The Latin fallback phrases (da den, bat dau …) handle cases where
-     * the STT engine strips diacritics.
-     */
     private fun normalize(text: String): String =
         text.lowercase().replace(Regex("\\s+"), " ").trim()
 }

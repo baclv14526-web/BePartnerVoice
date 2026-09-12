@@ -151,14 +151,25 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("📖 Danh sách lệnh giọng nói")
             .setMessage(
-                "📍 \"Đã đến điểm đón\" → [Đã đến]\n\n" +
-                "🚀 \"Bắt đầu chuyến đi\" → [Bắt đầu]\n\n" +
-                "✅ \"Trả khách\" / \"Hoàn thành\" → [Complete]\n\n" +
-                "👍 \"Chấp nhận chuyến\" → [Accept]\n\n" +
-                "❌ \"Từ chối\" → [Decline]\n\n" +
-                "🟢 \"Online\" / \"Sẵn sàng\"\n\n" +
-                "🔴 \"Offline\" / \"Nghỉ thôi\"\n\n" +
-                "💡 Nói rõ ràng, app tự lắng nghe liên tục."
+                "── Chuyến xe ──\n" +
+                "📍 \"Đã đến điểm đón\"\n" +
+                "🚀 \"Bắt đầu chuyến đi\"\n" +
+                "✅ \"Trả khách\" / \"Hoàn thành\"\n" +
+                "👍 \"Chấp nhận chuyến\"\n" +
+                "❌ \"Từ chối\"\n\n" +
+                "── Giao hàng ──\n" +
+                "📦 \"Đã đến điểm nhận hàng\"\n" +
+                "🛍️ \"Đã nhận hàng\"\n" +
+                "📷 \"Chụp ảnh nhận hàng\"\n" +
+                "↩️ \"Trả hàng\"\n\n" +
+                "── Online/Offline ──\n" +
+                "🟢 \"Online\" / \"Vào ca\"\n" +
+                "🔴 \"Offline\" / \"Nghỉ thôi\"\n" +
+                "🛑 \"Ngừng nhận chuyến\"\n" +
+                "🔁 \"Bật tắt\" → bật/tắt nút nhận cuốc BeBike\n" +
+                "🎤 \"Bật micro\" → bật lắng nghe\n" +
+                "🔇 \"Tắt micro\" → tắt lắng nghe\n\n" +
+                "💡 Nói rõ, app tự lắng nghe liên tục."
             )
             .setPositiveButton("OK", null)
             .show()

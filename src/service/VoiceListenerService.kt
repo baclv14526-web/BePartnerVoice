@@ -48,8 +48,9 @@ class VoiceListenerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> { shouldContinue = true;  startListening() }
-            ACTION_STOP  -> { shouldContinue = false; stopListening()  }
+            ACTION_START  -> { shouldContinue = true;  startListening() }
+            ACTION_STOP   -> { shouldContinue = false; stopListening()  }
+
         }
         return START_STICKY
     }
