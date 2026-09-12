@@ -169,6 +169,8 @@ class MainActivity : AppCompatActivity() {
                 "🔁 \"Bật tắt\" → bật/tắt nút nhận cuốc BeBike\n" +
                 "🎤 \"Bật micro\" → bật lắng nghe\n" +
                 "🔇 \"Tắt micro\" → tắt lắng nghe\n\n" +
+                "── Tài khoản ──\n" +
+                "💰 \"Xem số dư\" / \"Kiểm tra số dư\"\n\n" +
                 "💡 Nói rõ, app tự lắng nghe liên tục."
             )
             .setPositiveButton("OK", null)

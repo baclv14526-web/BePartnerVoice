@@ -101,6 +101,14 @@ class BePartnerAccessibilityService : AccessibilityService() {
         VoiceCommand.NGUNG_NHAN to listOf(
             "Ngừng nhận chuyến", "Không nhận", "Pause",
             "Tạm ngừng", "ngung nhan"
+        ),
+
+        // Xem số dư — nhãn nút thực tế trên BeBike Partner
+        // Thường là widget/text hiển thị số dư ở header hoặc tab "Tài khoản"
+        VoiceCommand.XEM_SO_DU to listOf(
+            "Số dư", "Xem số dư", "Ví", "Wallet", "Balance",
+            "Tài khoản", "Thu nhập", "Earnings",
+            "so du", "vi tien", "xem so du"
         )
     )
 

@@ -212,6 +212,23 @@ object VoiceCommandParser {
             "giao hang"
         ),
 
+        // ── Xem số dư (mới) ─────────────────────────────────────
+        VoiceCommand.XEM_SO_DU to listOf(
+            "xem số dư",
+            "số dư của tôi",
+            "kiểm tra số dư",
+            "tôi còn bao nhiêu tiền",
+            "còn bao nhiêu tiền",
+            "xem tiền",
+            "kiểm tra tiền",
+            "số dư tài khoản",
+            "xem tài khoản",
+            "xem du",
+            "so du",
+            "xem so du",
+            "kiem tra so du"
+        ),
+
         // ── Ngừng nhận chuyến (mới) ────────────────────────────
         VoiceCommand.NGUNG_NHAN to listOf(
             "ngừng nhận chuyến",

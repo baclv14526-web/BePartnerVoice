@@ -25,4 +25,7 @@ enum class VoiceCommand(
     CHUP_ANH       ("Chụp ảnh nhận hàng",        "📷"),
     TRA_HANG       ("Trả hàng",                  "↩️"),
     NGUNG_NHAN     ("Ngừng nhận chuyến",          "🛑"),
+
+    // ── Tài khoản ──────────────────────────────────────────────
+    XEM_SO_DU      ("Xem số dư",                    "💰"),
 }
