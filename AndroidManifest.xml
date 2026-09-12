@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.bepartner.voiceassist">
 
-    <!-- Permissions hoạt động trên Android 9+ -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -10,16 +10,14 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <!--
-        FOREGROUND_SERVICE_MICROPHONE chỉ tồn tại từ Android 12 (API 31).
-        Dùng maxSdkVersion để tránh lỗi trên Android 9 của Realme 2.
-        Thực ra permission này chỉ bắt buộc khai báo từ API 31+,
-        nên dùng uses-permission với maxSdkVersion là cách an toàn nhất.
+        FOREGROUND_SERVICE_MICROPHONE chỉ có từ API 31.
+        tools:ignore để AGP không báo lỗi khi minSdk=28.
+        Trên thiết bị API < 31 permission này bị hệ thống bỏ qua tự động.
     -->
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"
-        android:minSdkVersion="31" />
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -39,6 +37,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.DebugActivity"
+            android:exported="false"
+            android:label="Debug Console"
+            android:theme="@style/AppTheme" />
+
         <service
             android:name=".accessibility.BePartnerAccessibilityService"
             android:exported="true"
@@ -52,10 +56,6 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!--
-            foregroundServiceType="microphone" chỉ bắt buộc từ Android 10+.
-            Trên Android 9 không cần, nhưng khai báo cũng không gây lỗi.
-        -->
         <service
             android:name=".service.VoiceListenerService"
             android:exported="false"
@@ -72,12 +72,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <activity
-            android:name=".ui.DebugActivity"
-            android:exported="false"
-            android:label="Debug Console"
-            android:theme="@style/AppTheme" />
 
     </application>
 </manifest>
