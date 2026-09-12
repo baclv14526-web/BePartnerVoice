@@ -73,5 +73,11 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name=".ui.DebugActivity"
+            android:exported="false"
+            android:label="Debug Console"
+            android:theme="@style/AppTheme" />
+
     </application>
 </manifest>

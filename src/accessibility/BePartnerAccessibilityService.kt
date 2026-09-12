@@ -106,7 +106,7 @@ class BePartnerAccessibilityService : AccessibilityService() {
         // Xem số dư — nhãn nút thực tế trên BeBike Partner
         // Thường là widget/text hiển thị số dư ở header hoặc tab "Tài khoản"
         VoiceCommand.XEM_SO_DU to listOf(
-            "Số dư", "Xem số dư", "Ví", "Wallet", "Balance",
+            "Số dư", "Ví", "Wallet", "Balance",
             "Tài khoản", "Thu nhập", "Earnings",
             "so du", "vi tien", "xem so du"
         )
@@ -163,26 +163,69 @@ class BePartnerAccessibilityService : AccessibilityService() {
             val root = rootInActiveWindow ?: return@post
             val node = findButton(root, labels)
             if (node != null) {
+                val btnLabel = (node.text ?: node.contentDescription)?.toString() ?: "?"
                 clickNode(node)
                 VibrationHelper.vibrate(this, VibrationHelper.PATTERN_SUCCESS)
-                broadcastResult(command, true)
-                Log.i(TAG, "✅ Clicked '${node.text ?: node.contentDescription}' for $command")
+                broadcastResult(command, true, btnLabel)
+                Log.i(TAG, "✅ Clicked \"$btnLabel\" for $command")
             } else {
                 VibrationHelper.vibrate(this, VibrationHelper.PATTERN_FAIL)
-                broadcastResult(command, false)
-                Log.w(TAG, "❌ Button not found for $command, retrying in 800ms")
-                // Retry 1 lần sau 800ms (UI có thể đang load)
+                broadcastResult(command, false, "")
+                Log.w(TAG, "❌ Button not found for $command – labels tried: $labels")
                 handler.postDelayed({
                     rootInActiveWindow?.let { r ->
                         findButton(r, labels)?.let { n ->
+                            val btnLabel = (n.text ?: n.contentDescription)?.toString() ?: "?"
                             clickNode(n)
                             VibrationHelper.vibrate(this, VibrationHelper.PATTERN_SUCCESS)
-                            broadcastResult(command, true)
+                            broadcastResult(command, true, btnLabel)
                         }
                     }
                 }, 800)
             }
         }
+    }
+
+    // ── Dump toàn bộ view hierarchy để debug ─────────────────────
+    fun dumpCurrentWindow() {
+        handler.post {
+            val root = rootInActiveWindow
+            if (root == null) {
+                sendBroadcast(Intent("com.bepartner.voiceassist.VIEW_DUMP").apply {
+                    putExtra("dump", "❌ Không có cửa sổ nào đang mở (rootInActiveWindow = null)
+Hãy mở BeBike rồi thử lại.")
+                })
+                return@post
+            }
+            val sb = StringBuilder()
+            sb.appendLine("Package: ${root.packageName}")
+            sb.appendLine("─────────────────────────────")
+            dumpNode(root, sb, 0)
+            sendBroadcast(Intent("com.bepartner.voiceassist.VIEW_DUMP").apply {
+                putExtra("dump", sb.toString())
+            })
+        }
+    }
+
+    private fun dumpNode(node: AccessibilityNodeInfo?, sb: StringBuilder, depth: Int) {
+        if (node == null || depth > 12) return
+        val indent  = "  ".repeat(depth)
+        val text    = node.text?.toString()?.take(60) ?: ""
+        val desc    = node.contentDescription?.toString()?.take(60) ?: ""
+        val resId   = node.viewIdResourceName?.substringAfterLast("/") ?: ""
+        val click   = if (node.isClickable) "CLICKABLE" else ""
+        val enabled = if (!node.isEnabled) "DISABLED" else ""
+        val visible = if (!node.isVisibleToUser) "HIDDEN" else ""
+
+        // Chỉ in dòng có text hoặc clickable để log không quá dài
+        if (text.isNotEmpty() || desc.isNotEmpty() || node.isClickable) {
+            sb.appendLine("$indent[$click$enabled$visible]")
+            if (text.isNotEmpty())  sb.appendLine("${indent}  text="$text"")
+            if (desc.isNotEmpty())  sb.appendLine("${indent}  desc="$desc"")
+            if (resId.isNotEmpty()) sb.appendLine("${indent}  id="$resId"")
+            sb.appendLine()
+        }
+        for (i in 0 until node.childCount) dumpNode(node.getChild(i), sb, depth + 1)
     }
 
     // ── Tìm nút trên màn hình ─────────────────────────────────────
@@ -247,10 +290,11 @@ class BePartnerAccessibilityService : AccessibilityService() {
         dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
     }
 
-    private fun broadcastResult(command: VoiceCommand, success: Boolean) {
+    private fun broadcastResult(command: VoiceCommand, success: Boolean, buttonText: String = "") {
         sendBroadcast(Intent("com.bepartner.voiceassist.COMMAND_RESULT").apply {
             putExtra("command", command.name)
             putExtra("success", success)
+            putExtra("button_found", buttonText)
         })
     }
 }

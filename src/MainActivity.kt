@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import com.bepartner.voiceassist.accessibility.BePartnerAccessibilityService
 import com.bepartner.voiceassist.service.OverlayService
 import com.bepartner.voiceassist.service.VoiceListenerService
+import com.bepartner.voiceassist.ui.DebugActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_enable_overlay).setOnClickListener { openOverlaySettings() }
         btnStartService.setOnClickListener { startAllServices() }
         findViewById<Button>(R.id.btn_view_commands).setOnClickListener { showCommandReference() }
+        findViewById<Button>(R.id.btn_debug).setOnClickListener {
+            startActivity(Intent(this, DebugActivity::class.java))
+        }
     }
 
     override fun onResume() {

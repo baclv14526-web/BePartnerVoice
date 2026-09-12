@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="12dp">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔍 Debug Console"
+        android:textColor="#00FF88"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/tv_a11y_debug_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="❌ Accessibility: CHƯA BẬT"
+        android:textColor="#FF4444"
+        android:textSize="13sp"
+        android:paddingBottom="8dp"/>
+
+    <!-- Hướng dẫn -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="① Mở BeBike → ② Quay lại đây → ③ Nhấn DUMP VIEWS"
+        android:textColor="#AAAAAA"
+        android:textSize="11sp"
+        android:paddingBottom="8dp"/>
+
+    <!-- Nút Dump + Clear -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/btn_dump_views"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="📋 DUMP VIEWS"
+            android:textSize="12sp"
+            android:backgroundTint="#1565C0"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btn_clear_log"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="🗑️ XÓA LOG"
+            android:textSize="12sp"
+            android:backgroundTint="#424242"/>
+    </LinearLayout>
+
+    <!-- Test buttons -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test click nút (không cần nói):"
+        android:textColor="#AAAAAA"
+        android:textSize="11sp"
+        android:paddingBottom="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <Button
+            android:id="@+id/btn_test_da_den"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Đã đến"
+            android:textSize="10sp"
+            android:backgroundTint="#2E7D32"
+            android:layout_marginEnd="2dp"/>
+
+        <Button
+            android:id="@+id/btn_test_bat_dau"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Bắt đầu"
+            android:textSize="10sp"
+            android:backgroundTint="#1565C0"
+            android:layout_marginEnd="2dp"/>
+
+        <Button
+            android:id="@+id/btn_test_tra_khach"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Trả khách"
+            android:textSize="10sp"
+            android:backgroundTint="#6A1B9A"
+            android:layout_marginEnd="2dp"/>
+
+        <Button
+            android:id="@+id/btn_test_chap_nhan"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Chấp nhận"
+            android:textSize="10sp"
+            android:backgroundTint="#E65100"
+            android:layout_marginEnd="2dp"/>
+
+        <Button
+            android:id="@+id/btn_test_so_du"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Số dư"
+            android:textSize="10sp"
+            android:backgroundTint="#827717"/>
+    </LinearLayout>
+
+    <!-- Log output -->
+    <ScrollView
+        android:id="@+id/scroll_debug"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#0A0A0A"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/tv_debug_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#CCCCCC"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp"/>
+    </ScrollView>
+
+</LinearLayout>
