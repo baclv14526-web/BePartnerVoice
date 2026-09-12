@@ -29,87 +29,25 @@ class BePartnerAccessibilityService : AccessibilityService() {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    // ── Map lệnh → nhãn nút trên màn hình BeBike ─────────────────
-    // Thêm nhãn thực tế từ app BeBike vào đây nếu khác với mặc định
     private val commandButtonMap: Map<VoiceCommand, List<String>> = mapOf(
-
-        // Chuyến xe
-        VoiceCommand.DA_DEN to listOf(
-            "Đã đến", "Đã đến điểm đón", "Arrived", "I've arrived",
-            "da den"
-        ),
-        VoiceCommand.BAT_DAU to listOf(
-            "Bắt đầu chuyến đi", "Bắt đầu chuyến", "Bắt đầu",
-            "Start trip", "Start", "bat dau"
-        ),
-        VoiceCommand.TRA_KHACH to listOf(
-            "Trả khách", "Hoàn thành", "Kết thúc", "Complete",
-            "End trip", "Complete trip", "tra khach"
-        ),
-        VoiceCommand.CHAP_NHAN to listOf(
-            "Chấp nhận", "Nhận chuyến", "Accept", "OK", "Đồng ý",
-            "chap nhan"
-        ),
-        VoiceCommand.TU_CHOI to listOf(
-            "Từ chối", "Bỏ qua", "Decline", "Skip", "tu choi"
-        ),
-        VoiceCommand.BAO_CAO to listOf(
-            "Báo cáo", "Report", "Vấn đề", "bao cao"
-        ),
-
-        // Online / Offline
-        VoiceCommand.ONLINE to listOf(
-            "Online", "Bắt đầu nhận chuyến", "Go online", "Sẵn sàng",
-            "Vào ca"
-        ),
-        VoiceCommand.OFFLINE to listOf(
-            "Offline", "Dừng nhận chuyến", "Go offline", "Nghỉ",
-            "Kết thúc ca"
-        ),
-
-        // Bật/Tắt nút gạt nhận cuốc trên BeBike
-        VoiceCommand.BAT_NHAN_CUOC to listOf(
-            "Bật/Tắt", "Nhận cuốc", "Bắt đầu nhận", "Dừng nhận",
-            "Go", "Toggle", "bat nhan cuoc"
-        ),
-
-        // Bật/Tắt micro: xử lý nội bộ, không nhấn nút BeBike
-        VoiceCommand.BAT_MICRO to listOf(),
-        VoiceCommand.TAT_MICRO to listOf(),
-
-        // Giao hàng
-        VoiceCommand.DEN_DIEM_HANG to listOf(
-            "Đã đến điểm nhận hàng", "Đã đến điểm lấy hàng",
-            "Arrived at pickup", "Lấy hàng", "Nhận hàng",
-            "den diem hang"
-        ),
-        VoiceCommand.DA_NHAN_HANG to listOf(
-            "Đã nhận hàng", "Đã lấy hàng", "Picked up",
-            "Nhận hàng thành công", "Lấy hàng thành công",
-            "da nhan hang"
-        ),
-        VoiceCommand.CHUP_ANH to listOf(
-            "Chụp ảnh", "Chụp hình", "Take photo",
-            "Chụp ảnh xác nhận", "Chụp ảnh giao hàng",
-            "Camera", "chup anh"
-        ),
-        VoiceCommand.TRA_HANG to listOf(
-            "Trả hàng", "Giao hàng", "Hoàn thành giao hàng",
-            "Delivered", "Complete delivery", "Giao thành công",
-            "tra hang"
-        ),
-        VoiceCommand.NGUNG_NHAN to listOf(
-            "Ngừng nhận chuyến", "Không nhận", "Pause",
-            "Tạm ngừng", "ngung nhan"
-        ),
-
-        // Xem số dư — nhãn nút thực tế trên BeBike Partner
-        // Thường là widget/text hiển thị số dư ở header hoặc tab "Tài khoản"
-        VoiceCommand.XEM_SO_DU to listOf(
-            "Số dư", "Ví", "Wallet", "Balance",
-            "Tài khoản", "Thu nhập", "Earnings",
-            "so du", "vi tien", "xem so du"
-        )
+        VoiceCommand.DA_DEN       to listOf("Đã đến", "Đã đến điểm đón", "Arrived", "da den"),
+        VoiceCommand.BAT_DAU      to listOf("Bắt đầu chuyến đi", "Bắt đầu chuyến", "Bắt đầu", "Start trip", "Start", "bat dau"),
+        VoiceCommand.TRA_KHACH    to listOf("Trả khách", "Hoàn thành", "Kết thúc", "Complete", "End trip", "Complete trip", "tra khach"),
+        VoiceCommand.CHAP_NHAN    to listOf("Chấp nhận", "Nhận chuyến", "Accept", "OK", "Đồng ý", "chap nhan"),
+        VoiceCommand.TU_CHOI      to listOf("Từ chối", "Bỏ qua", "Decline", "Skip", "tu choi"),
+        VoiceCommand.BAO_CAO      to listOf("Báo cáo", "Report", "Vấn đề", "bao cao"),
+        VoiceCommand.ONLINE       to listOf("Online", "Bắt đầu nhận chuyến", "Go online", "Sẵn sàng", "Vào ca"),
+        VoiceCommand.OFFLINE      to listOf("Offline", "Dừng nhận chuyến", "Go offline", "Nghỉ", "Kết thúc ca"),
+        VoiceCommand.BAT_NHAN_CUOC to listOf("Bật/Tắt", "Nhận cuốc", "Bắt đầu nhận", "Dừng nhận", "Go", "Toggle", "bat nhan cuoc"),
+        VoiceCommand.DEN_DIEM_HANG to listOf("Đã đến điểm nhận hàng", "Đã đến điểm lấy hàng", "Arrived at pickup", "Lấy hàng", "Nhận hàng", "den diem hang"),
+        VoiceCommand.DA_NHAN_HANG  to listOf("Đã nhận hàng", "Đã lấy hàng", "Picked up", "Nhận hàng thành công", "da nhan hang"),
+        VoiceCommand.CHUP_ANH      to listOf("Chụp ảnh", "Chụp hình", "Take photo", "Chụp ảnh xác nhận", "Camera", "chup anh"),
+        VoiceCommand.TRA_HANG      to listOf("Trả hàng", "Giao hàng", "Hoàn thành giao hàng", "Delivered", "Complete delivery", "tra hang"),
+        VoiceCommand.NGUNG_NHAN    to listOf("Ngừng nhận chuyến", "Không nhận", "Pause", "Tạm ngừng", "ngung nhan"),
+        VoiceCommand.XEM_SO_DU     to listOf("Số dư", "Ví", "Wallet", "Balance", "Tài khoản", "Thu nhập", "Earnings", "so du", "xem so du"),
+        // BAT_MICRO / TAT_MICRO xử lý nội bộ, không nhấn nút BeBike
+        VoiceCommand.BAT_MICRO    to listOf(),
+        VoiceCommand.TAT_MICRO    to listOf()
     )
 
     private val commandReceiver = object : BroadcastReceiver() {
@@ -129,7 +67,7 @@ class BePartnerAccessibilityService : AccessibilityService() {
         } else {
             registerReceiver(commandReceiver, filter)
         }
-        Log.i(TAG, "Accessibility service connected ✓")
+        Log.i(TAG, "Accessibility service connected")
     }
 
     override fun onDestroy() {
@@ -141,18 +79,15 @@ class BePartnerAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
     override fun onInterrupt() {}
 
+    // ── Thực thi lệnh giọng nói ───────────────────────────────────
     fun executeVoiceCommand(command: VoiceCommand) {
-        // BAT_MICRO / TAT_MICRO: điều khiển micro của app, không nhấn nút BeBike
+        // BAT_MICRO / TAT_MICRO: điều khiển micro app, không nhấn nút BeBike
         if (command == VoiceCommand.BAT_MICRO) {
-            handler.post {
-                sendBroadcast(Intent(VoiceListenerService.ACTION_START))
-            }
+            sendBroadcast(Intent(VoiceListenerService.ACTION_START))
             return
         }
         if (command == VoiceCommand.TAT_MICRO) {
-            handler.post {
-                sendBroadcast(Intent(VoiceListenerService.ACTION_STOP))
-            }
+            sendBroadcast(Intent(VoiceListenerService.ACTION_STOP))
             return
         }
 
@@ -163,22 +98,27 @@ class BePartnerAccessibilityService : AccessibilityService() {
             val root = rootInActiveWindow ?: return@post
             val node = findButton(root, labels)
             if (node != null) {
-                val btnLabel = (node.text ?: node.contentDescription)?.toString() ?: "?"
+                val btnLabel = node.text?.toString()
+                    ?: node.contentDescription?.toString()
+                    ?: "?"
                 clickNode(node)
                 VibrationHelper.vibrate(this, VibrationHelper.PATTERN_SUCCESS)
                 broadcastResult(command, true, btnLabel)
-                Log.i(TAG, "✅ Clicked \"$btnLabel\" for $command")
+                Log.i(TAG, "Clicked [$btnLabel] for $command")
             } else {
                 VibrationHelper.vibrate(this, VibrationHelper.PATTERN_FAIL)
                 broadcastResult(command, false, "")
-                Log.w(TAG, "❌ Button not found for $command – labels tried: $labels")
+                Log.w(TAG, "Button not found for $command | labels=$labels")
+                // Retry sau 800ms
                 handler.postDelayed({
                     rootInActiveWindow?.let { r ->
                         findButton(r, labels)?.let { n ->
-                            val btnLabel = (n.text ?: n.contentDescription)?.toString() ?: "?"
+                            val lbl = n.text?.toString()
+                                ?: n.contentDescription?.toString()
+                                ?: "?"
                             clickNode(n)
                             VibrationHelper.vibrate(this, VibrationHelper.PATTERN_SUCCESS)
-                            broadcastResult(command, true, btnLabel)
+                            broadcastResult(command, true, lbl)
                         }
                     }
                 }, 800)
@@ -186,20 +126,19 @@ class BePartnerAccessibilityService : AccessibilityService() {
         }
     }
 
-    // ── Dump toàn bộ view hierarchy để debug ─────────────────────
+    // ── Dump view hierarchy để debug ─────────────────────────────
     fun dumpCurrentWindow() {
         handler.post {
             val root = rootInActiveWindow
             if (root == null) {
                 sendBroadcast(Intent("com.bepartner.voiceassist.VIEW_DUMP").apply {
-                    putExtra("dump", "❌ Không có cửa sổ nào đang mở (rootInActiveWindow = null)
-Hãy mở BeBike rồi thử lại.")
+                    putExtra("dump", "rootInActiveWindow = null\nMở BeBike rồi thử lại.")
                 })
                 return@post
             }
             val sb = StringBuilder()
-            sb.appendLine("Package: ${root.packageName}")
-            sb.appendLine("─────────────────────────────")
+            sb.append("Package: ").append(root.packageName).append("\n")
+            sb.append("─────────────────────────────\n")
             dumpNode(root, sb, 0)
             sendBroadcast(Intent("com.bepartner.voiceassist.VIEW_DUMP").apply {
                 putExtra("dump", sb.toString())
@@ -209,28 +148,32 @@ Hãy mở BeBike rồi thử lại.")
 
     private fun dumpNode(node: AccessibilityNodeInfo?, sb: StringBuilder, depth: Int) {
         if (node == null || depth > 12) return
-        val indent  = "  ".repeat(depth)
-        val text    = node.text?.toString()?.take(60) ?: ""
-        val desc    = node.contentDescription?.toString()?.take(60) ?: ""
-        val resId   = node.viewIdResourceName?.substringAfterLast("/") ?: ""
-        val click   = if (node.isClickable) "CLICKABLE" else ""
-        val enabled = if (!node.isEnabled) "DISABLED" else ""
-        val visible = if (!node.isVisibleToUser) "HIDDEN" else ""
+        val indent = "  ".repeat(depth)
+        val text   = node.text?.toString()?.take(60) ?: ""
+        val desc   = node.contentDescription?.toString()?.take(60) ?: ""
+        val resId  = node.viewIdResourceName?.substringAfterLast("/") ?: ""
+        val flags  = buildString {
+            if (node.isClickable)     append("CLICKABLE ")
+            if (!node.isEnabled)      append("DISABLED ")
+            if (!node.isVisibleToUser) append("HIDDEN ")
+        }.trim()
 
-        // Chỉ in dòng có text hoặc clickable để log không quá dài
         if (text.isNotEmpty() || desc.isNotEmpty() || node.isClickable) {
-            sb.appendLine("$indent[$click$enabled$visible]")
-            if (text.isNotEmpty())  sb.appendLine("${indent}  text="$text"")
-            if (desc.isNotEmpty())  sb.appendLine("${indent}  desc="$desc"")
-            if (resId.isNotEmpty()) sb.appendLine("${indent}  id="$resId"")
-            sb.appendLine()
+            sb.append(indent).append("[").append(flags).append("]\n")
+            // Dùng + thay vì string template lồng để tránh lỗi escape
+            if (text.isNotEmpty())  sb.append(indent).append("  text=").append(text).append("\n")
+            if (desc.isNotEmpty())  sb.append(indent).append("  desc=").append(desc).append("\n")
+            if (resId.isNotEmpty()) sb.append(indent).append("  id=").append(resId).append("\n")
+            sb.append("\n")
         }
-        for (i in 0 until node.childCount) dumpNode(node.getChild(i), sb, depth + 1)
+        for (i in 0 until node.childCount) {
+            dumpNode(node.getChild(i), sb, depth + 1)
+        }
     }
 
     // ── Tìm nút trên màn hình ─────────────────────────────────────
     private fun findButton(root: AccessibilityNodeInfo, labels: List<String>): AccessibilityNodeInfo? {
-        // Cách 1: tìm theo text chính xác
+        // Cách 1: tìm chính xác theo text
         for (label in labels) {
             val nodes = root.findAccessibilityNodeInfosByText(label)
             for (n in nodes) {
@@ -238,7 +181,7 @@ Hãy mở BeBike rồi thử lại.")
                 clickableAncestor(n)?.let { return it }
             }
         }
-        // Cách 2: duyệt toàn bộ cây view, khớp một phần
+        // Cách 2: duyệt cây, khớp một phần
         return walkTree(root) { node ->
             if (!isClickable(node)) return@walkTree false
             val text = node.text?.toString()?.lowercase() ?: ""
@@ -263,10 +206,12 @@ Hãy mở BeBike rồi thử lại.")
     }
 
     private fun clickableAncestor(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
-        var cur = node?.parent; var depth = 0
+        var cur = node?.parent
+        var depth = 0
         while (cur != null && depth < 5) {
             if (isClickable(cur)) return cur
-            cur = cur.parent; depth++
+            cur = cur.parent
+            depth++
         }
         return null
     }
@@ -274,7 +219,7 @@ Hãy mở BeBike rồi thử lại.")
     private fun isClickable(n: AccessibilityNodeInfo) =
         n.isClickable && n.isEnabled && n.isVisibleToUser
 
-    // ── Click thực thi ─────────────────────────────────────────────
+    // ── Thực hiện click ──────────────────────────────────────────
     private fun clickNode(node: AccessibilityNodeInfo) {
         if (!node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
             val bounds = Rect()
@@ -290,7 +235,7 @@ Hãy mở BeBike rồi thử lại.")
         dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
     }
 
-    private fun broadcastResult(command: VoiceCommand, success: Boolean, buttonText: String = "") {
+    private fun broadcastResult(command: VoiceCommand, success: Boolean, buttonText: String) {
         sendBroadcast(Intent("com.bepartner.voiceassist.COMMAND_RESULT").apply {
             putExtra("command", command.name)
             putExtra("success", success)
