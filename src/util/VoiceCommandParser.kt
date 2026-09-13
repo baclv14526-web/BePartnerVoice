@@ -94,30 +94,27 @@ object VoiceCommandParser {
         // ── Online ─────────────────────────────────────────────
         VoiceCommand.ONLINE to listOf(
             "bắt đầu nhận chuyến",
-            "vào ca",
             "online",
             "sẵn sàng",
             "go online",
             "bat dau nhan chuyen",
-            "vao ca",
             "san sang"
         ),
 
         // ── Offline ────────────────────────────────────────────
         VoiceCommand.OFFLINE to listOf(
             "dừng nhận chuyến",
-            "kết thúc ca",
+            "kết thúc",
             "offline",
             "nghỉ thôi",
             "go offline",
             "dung nhan chuyen",
-            "ket thuc ca",
             "nghi thoi"
         ),
 
         // ── Bật/Tắt nút nhận cuốc (gạt trên BeBike) ────────────
         VoiceCommand.BAT_NHAN_CUOC to listOf(
-            "bật tắt nhận cuốc",
+            "Bật/Tắt",
             "bật nhận cuốc",
             "tắt nhận cuốc",
             "bật nút nhận cuốc",
@@ -212,23 +209,6 @@ object VoiceCommandParser {
             "giao hang"
         ),
 
-        // ── Xem số dư (mới) ─────────────────────────────────────
-        VoiceCommand.XEM_SO_DU to listOf(
-            "xem số dư",
-            "số dư của tôi",
-            "kiểm tra số dư",
-            "tôi còn bao nhiêu tiền",
-            "còn bao nhiêu tiền",
-            "xem tiền",
-            "kiểm tra tiền",
-            "số dư tài khoản",
-            "xem tài khoản",
-            "xem du",
-            "so du",
-            "xem so du",
-            "kiem tra so du"
-        ),
-
         // ── Ngừng nhận chuyến (mới) ────────────────────────────
         VoiceCommand.NGUNG_NHAN to listOf(
             "ngừng nhận chuyến",
@@ -239,6 +219,52 @@ object VoiceCommandParser {
             "khong nhan chuyen nua",
             "tam ngung nhan",
             "dung lai"
+        ),
+
+        // ── Xem số dư ────────────────────────────────────────────
+        VoiceCommand.XEM_SO_DU to listOf(
+            "xem số dư", "số dư của tôi", "kiểm tra số dư",
+            "tôi còn bao nhiêu tiền", "còn bao nhiêu tiền",
+            "xem tiền", "số dư tài khoản",
+            "so du", "xem so du", "kiem tra so du"
+        ),
+
+        // ── Điều hướng tab ───────────────────────────────────────
+        VoiceCommand.TRANG_CHU to listOf(
+            "trang chủ", "về trang chủ", "màn hình chính", "home",
+            "trang chu", "ve trang chu", "man hinh chinh"
+        ),
+
+        VoiceCommand.THU_NHAP to listOf(
+            "thu nhập", "xem thu nhập", "doanh thu", "tiền kiếm được",
+            "thu nhap", "xem thu nhap", "doanh thu hom nay"
+        ),
+
+        VoiceCommand.DICH_VU to listOf(
+            "dịch vụ", "xem dịch vụ", "loại dịch vụ", "services",
+            "dich vu", "xem dich vu"
+        ),
+
+        VoiceCommand.HOP_THU to listOf(
+            "hộp thư", "xem hộp thư", "tin nhắn", "thông báo", "inbox",
+            "hop thu", "xem hop thu", "tin nhan", "thong bao"
+        ),
+
+        VoiceCommand.TOI to listOf(
+            "trang của tôi", "trang cá nhân", "tài khoản của tôi",
+            "hồ sơ", "profile", "trang ca nhan", "ho so"
+        ),
+
+        VoiceCommand.LICH_SU to listOf(
+            "lịch sử", "xem lịch sử", "lịch sử chuyến đi",
+            "chuyến đi cũ", "history",
+            "lich su", "xem lich su", "lich su chuyen di"
+        ),
+
+        VoiceCommand.TI_LE_HOAT_DONG to listOf(
+            "tỉ lệ hoạt động", "xem tỉ lệ", "tỷ lệ hoạt động",
+            "tỷ lệ chấp nhận", "tỉ lệ chấp nhận", "hiệu suất",
+            "performance", "ti le hoat dong", "ty le hoat dong", "hieu suat"
         )
     )
 

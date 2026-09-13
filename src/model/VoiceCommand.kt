@@ -15,7 +15,7 @@ enum class VoiceCommand(
     // ── Online / Offline ───────────────────────────────────────
     ONLINE         ("Bắt đầu nhận chuyến",       "🟢"),
     OFFLINE        ("Dừng nhận chuyến",           "🔴"),
-    BAT_NHAN_CUOC  ("Bật/Tắt nhận cuốc",          "🔁"),
+    BAT_NHAN_CUOC  ("Bật/Tắt",          "🔁"),
     BAT_MICRO      ("Bật micro",                   "🎤"),
     TAT_MICRO      ("Tắt micro",                   "🔇"),
 
@@ -28,4 +28,13 @@ enum class VoiceCommand(
 
     // ── Tài khoản ──────────────────────────────────────────────
     XEM_SO_DU      ("Xem số dư",                    "💰"),
+
+    // ── Điều hướng tab (mới) ───────────────────────────────────
+    TRANG_CHU      ("Trang chủ",                     "🏠"),
+    THU_NHAP       ("Thu nhập",                      "💵"),
+    DICH_VU        ("Dịch vụ",                       "🛵"),
+    HOP_THU        ("Hộp thư",                       "📬"),
+    TOI            ("Tôi / Tài khoản",               "👤"),
+    LICH_SU        ("Lịch sử",                       "📋"),
+    TI_LE_HOAT_DONG("Tỉ lệ hoạt động",              "📊"),
 }

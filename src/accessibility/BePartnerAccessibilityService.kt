@@ -30,24 +30,54 @@ class BePartnerAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
 
     private val commandButtonMap: Map<VoiceCommand, List<String>> = mapOf(
-        VoiceCommand.DA_DEN       to listOf("Đã đến", "Đã đến điểm đón", "Arrived", "da den"),
-        VoiceCommand.BAT_DAU      to listOf("Bắt đầu chuyến đi", "Bắt đầu chuyến", "Bắt đầu", "Start trip", "Start", "bat dau"),
-        VoiceCommand.TRA_KHACH    to listOf("Trả khách", "Hoàn thành", "Kết thúc", "Complete", "End trip", "Complete trip", "tra khach"),
-        VoiceCommand.CHAP_NHAN    to listOf("Chấp nhận", "Nhận chuyến", "Accept", "OK", "Đồng ý", "chap nhan"),
-        VoiceCommand.TU_CHOI      to listOf("Từ chối", "Bỏ qua", "Decline", "Skip", "tu choi"),
+        VoiceCommand.DA_DEN       to listOf("Đã đến điểm đón", "ĐÃ ĐẾN ĐIỂM ĐÓN", "ĐA DEN DIEM DON", "Đã đến", "Arrived", "da den"),
+        VoiceCommand.BAT_DAU      to listOf("Bắt đầu chuyến đi", "BẮT ĐẦU CHUYẾN ĐI", "Bắt đầu chuyến", "Bắt đầu", "Start trip", "Start", "bat dau"),
+        VoiceCommand.TRA_KHACH    to listOf("Trả khách", "TRẢ KHÁCH", "KẾT THÚC", "Hoàn thành", "Kết thúc", "Complete", "End trip", "Complete trip", "tra khach"),
+        VoiceCommand.CHAP_NHAN    to listOf("Chấp nhận", "CHẤP NHẬN", "NHẬN CHUYẾN", "Nhận chuyến", "Accept", "OK", "Đồng ý", "chap nhan"),
+        VoiceCommand.TU_CHOI      to listOf("Từ chối", "TỪ CHỐI", "Bỏ qua", "Decline", "Skip", "tu choi"),
         VoiceCommand.BAO_CAO      to listOf("Báo cáo", "Report", "Vấn đề", "bao cao"),
-        VoiceCommand.ONLINE       to listOf("Online", "Bắt đầu nhận chuyến", "Go online", "Sẵn sàng", "Vào ca"),
-        VoiceCommand.OFFLINE      to listOf("Offline", "Dừng nhận chuyến", "Go offline", "Nghỉ", "Kết thúc ca"),
-        VoiceCommand.BAT_NHAN_CUOC to listOf("Bật/Tắt", "Nhận cuốc", "Bắt đầu nhận", "Dừng nhận", "Go", "Toggle", "bat nhan cuoc"),
+        VoiceCommand.ONLINE       to listOf("Bắt đầu nhận chuyến", "BẮT ĐẦU NHẬN CHUYẾN", "Online", "Go online", "Sẵn sàng"),
+        VoiceCommand.OFFLINE      to listOf("Dừng nhận chuyến", "DỪNG NHẬN CHUYẾN", "Offline",  "Go offline", "Nghỉ", "Kết thúc"),
+        VoiceCommand.BAT_NHAN_CUOC to listOf("Bật/Tắt", "BẬT/TẮT", "Bắt đầu nhận", "Dừng nhận", "Go", "Toggle", "bat nhan cuoc"),
         VoiceCommand.DEN_DIEM_HANG to listOf("Đã đến điểm nhận hàng", "Đã đến điểm lấy hàng", "Arrived at pickup", "Lấy hàng", "Nhận hàng", "den diem hang"),
         VoiceCommand.DA_NHAN_HANG  to listOf("Đã nhận hàng", "Đã lấy hàng", "Picked up", "Nhận hàng thành công", "da nhan hang"),
-        VoiceCommand.CHUP_ANH      to listOf("Chụp ảnh", "Chụp hình", "Take photo", "Chụp ảnh xác nhận", "Camera", "chup anh"),
-        VoiceCommand.TRA_HANG      to listOf("Trả hàng", "Giao hàng", "Hoàn thành giao hàng", "Delivered", "Complete delivery", "tra hang"),
+        VoiceCommand.CHUP_ANH      to listOf("Chụp ảnh", "Lưu ảnh", "Take photo", "Chụp ảnh xác nhận", "Camera", "chup anh"),
+        VoiceCommand.TRA_HANG      to listOf("Trả hàng", "TRẢ HÀNG", "Giao hàng", "Hoàn thành giao hàng", "Delivered", "Complete delivery", "tra hang"),
         VoiceCommand.NGUNG_NHAN    to listOf("Ngừng nhận chuyến", "Không nhận", "Pause", "Tạm ngừng", "ngung nhan"),
-        VoiceCommand.XEM_SO_DU     to listOf("Số dư", "Ví", "Wallet", "Balance", "Tài khoản", "Thu nhập", "Earnings", "so du", "xem so du"),
+        VoiceCommand.XEM_SO_DU     to listOf("Xem số dư", "Số dư", "Ví", "Wallet", "Thu nhập", "Earnings", "so du", "xem so du"),
         // BAT_MICRO / TAT_MICRO xử lý nội bộ, không nhấn nút BeBike
         VoiceCommand.BAT_MICRO    to listOf(),
-        VoiceCommand.TAT_MICRO    to listOf()
+        VoiceCommand.TAT_MICRO    to listOf(),
+
+        // ── Điều hướng tab – tìm theo text/contentDescription/resourceId ──
+        VoiceCommand.TRANG_CHU       to listOf(
+            "Trang chủ", "Home", "Trang Chủ", "trang-chu", "home_tab"
+        ),
+        VoiceCommand.THU_NHAP        to listOf(
+            "Thu nhập", "Doanh thu", "Earnings", "Income",
+            "Thu Nhập", "thu-nhap", "earnings_tab"
+        ),
+        VoiceCommand.DICH_VU         to listOf(
+            "Dịch vụ", "Services", "Service", "Dich Vu",
+            "dich-vu", "service_tab"
+        ),
+        VoiceCommand.HOP_THU         to listOf(
+            "Hộp thư", "Inbox", "Tin nhắn", "Thông báo",
+            "Hộp Thư", "hop-thu", "inbox_tab", "message_tab"
+        ),
+        VoiceCommand.TOI             to listOf(
+            "Tôi", "Tài khoản", "Hồ sơ", "Profile",
+            "Account", "Me", "toi", "profile_tab", "account_tab"
+        ),
+        VoiceCommand.LICH_SU         to listOf(
+            "Lịch sử", "History", "Lịch Sử",
+            "lich-su", "history_tab", "trip_history"
+        ),
+        VoiceCommand.TI_LE_HOAT_DONG to listOf(
+            "Tỉ lệ hoạt động", "Tỷ lệ", "Hiệu suất",
+            "Performance", "Rate", "Activity rate",
+            "ti-le", "performance_tab", "activity_tab"
+        )
     )
 
     private val commandReceiver = object : BroadcastReceiver() {

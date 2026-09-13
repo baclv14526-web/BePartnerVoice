@@ -175,6 +175,14 @@ class MainActivity : AppCompatActivity() {
                 "🔇 \"Tắt micro\" → tắt lắng nghe\n\n" +
                 "── Tài khoản ──\n" +
                 "💰 \"Xem số dư\" / \"Kiểm tra số dư\"\n\n" +
+                "── Điều hướng tab ──\n" +
+                "🏠 \"Trang chủ\"\n" +
+                "💵 \"Thu nhập\"\n" +
+                "🛵 \"Dịch vụ\"\n" +
+                "📬 \"Hộp thư\"\n" +
+                "👤 \"Tôi\" / \"Trang cá nhân\"\n" +
+                "📋 \"Lịch sử\"\n" +
+                "📊 \"Tỉ lệ hoạt động\"\n\n" +
                 "💡 Nói rõ, app tự lắng nghe liên tục."
             )
             .setPositiveButton("OK", null)
