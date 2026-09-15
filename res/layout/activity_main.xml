@@ -152,6 +152,16 @@
             android:backgroundTint="#1E1E1E"
             android:textColor="#AAAAAA" />
 
+        <!-- Battery optimization button -->
+        <Button
+            android:id="@+id/btn_battery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔋 Tắt tối ưu hóa pin (chống bị kill)"
+            android:backgroundTint="#F57F17"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp"/>
+
         <!-- Debug button -->
         <Button
             android:id="@+id/btn_debug"

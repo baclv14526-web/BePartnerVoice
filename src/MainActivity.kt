@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.content.Context
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
@@ -47,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_debug).setOnClickListener {
             startActivity(Intent(this, DebugActivity::class.java))
         }
+        findViewById<Button>(R.id.btn_battery).setOnClickListener { openBatterySettings() }
     }
 
     override fun onResume() {
@@ -186,6 +189,36 @@ class MainActivity : AppCompatActivity() {
                 "💡 Nói rõ, app tự lắng nghe liên tục."
             )
             .setPositiveButton("OK", null)
+            .show()
+    }
+
+    // ── Tắt battery optimization – nguyên nhân phổ biến khiến ─────
+    // ── Accessibility Service bị Android/Realme UI tự kill ngầm ───
+    private fun openBatterySettings() {
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isIgnoring = pm.isIgnoringBatteryOptimizations(packageName)
+        if (isIgnoring) {
+            Toast.makeText(this, "✅ Đã tắt tối ưu hóa pin cho app này rồi", Toast.LENGTH_LONG).show()
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("🔋 Tắt tối ưu hóa pin")
+            .setMessage(
+                "Realme/ColorOS thường tự tắt app chạy nền để tiết kiệm pin, " +
+                "khiến Accessibility Service bị ngắt ngẫu nhiên.\n\n" +
+                "Nhấn 'Mở Cài đặt' rồi chọn 'Không tối ưu hóa' hoặc 'Cho phép' cho BePartner Voice."
+            )
+            .setPositiveButton("Mở Cài đặt") { _, _ ->
+                try {
+                    startActivity(Intent(
+                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Uri.parse("package:$packageName")
+                    ))
+                } catch (e: Exception) {
+                    startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                }
+            }
+            .setNegativeButton("Hủy", null)
             .show()
     }
 }

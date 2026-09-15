@@ -15,7 +15,7 @@ enum class VoiceCommand(
     // ── Online / Offline ───────────────────────────────────────
     ONLINE         ("Bắt đầu nhận chuyến",       "🟢"),
     OFFLINE        ("Dừng nhận chuyến",           "🔴"),
-    BAT_NHAN_CUOC  ("Bật/Tắt",          "🔁"),
+    BAT_NHAN_CUOC  ("Bật/Tắt nhận cuốc",          "🔁"),
     BAT_MICRO      ("Bật micro",                   "🎤"),
     TAT_MICRO      ("Tắt micro",                   "🔇"),
 

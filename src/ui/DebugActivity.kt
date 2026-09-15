@@ -57,6 +57,16 @@ class DebugActivity : AppCompatActivity() {
                         log("   → Nhấn [DUMP VIEWS] để xem tên nút thực tế", Color.RED)
                     }
                 }
+                "com.bepartner.voiceassist.SERVICE_STATE" -> {
+                    val connected = intent.getBooleanExtra("connected", false)
+                    if (connected) {
+                        log("✅ Accessibility Service ĐÃ KẾT NỐI", Color.GREEN)
+                    } else {
+                        log("🔴 Accessibility Service BỊ NGẮT (hệ thống tắt hoặc app bị kill)", Color.RED)
+                        log("   → Kiểm tra: Cài đặt > Pin > Tối ưu hóa pin > BePartner Voice > KHÔNG tối ưu", Color.RED)
+                    }
+                    onResume() // refresh status text
+                }
                 "com.bepartner.voiceassist.VIEW_DUMP" -> {
                     val dump = intent.getStringExtra("dump") ?: return
                     log("━━━ VIEW DUMP (BeBike) ━━━", Color.CYAN)
@@ -150,6 +160,7 @@ class DebugActivity : AppCompatActivity() {
             addAction("com.bepartner.voiceassist.STATUS_UPDATE")
             addAction("com.bepartner.voiceassist.COMMAND_RESULT")
             addAction("com.bepartner.voiceassist.VIEW_DUMP")
+            addAction("com.bepartner.voiceassist.SERVICE_STATE")
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)

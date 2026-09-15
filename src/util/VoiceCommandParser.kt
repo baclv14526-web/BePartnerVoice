@@ -94,27 +94,30 @@ object VoiceCommandParser {
         // ── Online ─────────────────────────────────────────────
         VoiceCommand.ONLINE to listOf(
             "bắt đầu nhận chuyến",
+            "vào ca",
             "online",
             "sẵn sàng",
             "go online",
             "bat dau nhan chuyen",
+            "vao ca",
             "san sang"
         ),
 
         // ── Offline ────────────────────────────────────────────
         VoiceCommand.OFFLINE to listOf(
             "dừng nhận chuyến",
-            "kết thúc",
+            "kết thúc ca",
             "offline",
             "nghỉ thôi",
             "go offline",
             "dung nhan chuyen",
+            "ket thuc ca",
             "nghi thoi"
         ),
 
         // ── Bật/Tắt nút nhận cuốc (gạt trên BeBike) ────────────
         VoiceCommand.BAT_NHAN_CUOC to listOf(
-            "Bật/Tắt",
+            "bật tắt nhận cuốc",
             "bật nhận cuốc",
             "tắt nhận cuốc",
             "bật nút nhận cuốc",

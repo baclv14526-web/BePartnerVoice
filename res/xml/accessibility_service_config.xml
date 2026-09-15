@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Accessibility Service Configuration for BePartner Voice Control
-    - packageNames: target BeBike partner app (adjust package name if different)
-    - accessibilityEventTypes: listen for window content changes to find buttons
-    - accessibilityFlags: include child views for deep button search
-    - canRetrieveWindowContent: CRITICAL - allows reading screen content
-    - canPerformGestures: allows simulating taps
+    ════════════════════════════════════════════════════════════════
+    QUAN TRỌNG: KHÔNG khai báo android:packageNames ở đây.
+
+    Lý do: nếu packageNames liệt kê SAI tên package của BeBike Partner,
+    Android sẽ KHÔNG BAO GIỜ gửi sự kiện cho service khi BeBike mở —
+    và rootInActiveWindow() sẽ LUÔN trả về null. Đây từng là nguyên
+    nhân khiến app "chập chờn" (thực ra là không hoạt động hoàn toàn
+    với BeBike, chỉ tình cờ hoạt động khi test trên app/launcher khác).
+
+    Bỏ trống packageNames = service nhận sự kiện từ TẤT CẢ app.
+    Cách này tốn thêm chút hiệu năng nhưng đảm bảo LUÔN hoạt động
+    với BeBike bất kể tên package thật là gì.
+
+    Sau khi xác nhận đúng package qua Debug Console (DUMP VIEWS sẽ
+    in ra dòng "Package: com.xxx.yyy"), có thể thêm lại packageNames
+    để tối ưu pin, nhưng không bắt buộc.
+    ════════════════════════════════════════════════════════════════
 -->
 <accessibility-service
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged|typeViewClicked|typeAllMask"
-    android:accessibilityFeedbackType="feedbackSpoken|feedbackGeneric"
-    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagReportViewIds|flagRequestEnhancedWebAccessibility"
+    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged|typeViewClicked|typeViewFocused|typeViewScrolled"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagReportViewIds|flagRetrieveInteractiveWindows"
     android:canPerformGestures="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
-    android:notificationTimeout="100"
-    android:packageNames="com.go.bepartnerd,com.bebike.partner,com.grab.driver,com.bepartnerd"
+    android:notificationTimeout="50"
     android:settingsActivity=".MainActivity"
     android:summary="@string/accessibility_service_summary" />
-<!--
-    NOTE: android:packageNames above lists possible BeBike package names.
-    Check the actual package name on your device via:
-    adb shell pm list packages | grep -i be
-    Then update this field with the correct one.
--->
